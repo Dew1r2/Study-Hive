@@ -1,6 +1,6 @@
-# [Project name]
+# Study Hive
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A responsive study companion for Ugandan secondary students, with NCDC curriculum previews, focus tools, and a safe foundation for moderated peer learning.
 
 ## Run & Operate
 
@@ -22,15 +22,22 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/study-hive/` — Study Hive web app.
+- `artifacts/api-server/` — shared API server.
+- `lib/api-spec/openapi.yaml` — API contract source of truth.
+- `lib/db/src/schema/` — shared database schema.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Treat the first app experience as a browser-local demo, not a real student account or shared school campus.
+- Do not collect NIN/TMIS in the client. Identity verification and raw-identifier deletion require a trusted, server-side verification flow.
+- Never enable shared student posts, files, or classroom signaling until authentication, school/grade authorization, server-side moderation, and reporting are in place.
+- Direct messages remain disabled. Any live classroom must enforce a three-participant minimum on the server, not just in the interface.
+- Store curriculum items with source, subject, level, and curriculum-version metadata. Lower-secondary and advanced-secondary standards differ; do not invent official NCDC book mappings.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Study Hive is intended to combine class-based learning, NCDC practical guides, an AI tutor, focus tools, peer learning, and moderated classrooms for Ugandan students in S1–S6.
 
 ## User preferences
 
@@ -38,7 +45,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- NCDC content must be verified against the official curriculum edition before being labeled as verified or used for progression decisions.
 
 ## Pointers
 

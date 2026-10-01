@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Study Hive"
+description = "A responsive, gamified study platform for Ugandan secondary students, bringing class-based learning, NCDC practical books, study tools, and moderated peer learning together."
+version = "1.0.0"
+id = "artifacts/study-hive"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23325
+
+[services.development]
+run = "pnpm --filter @workspace/study-hive run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/study-hive", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/study-hive/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23325"
+BASE_PATH = "/"
