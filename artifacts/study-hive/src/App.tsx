@@ -44,6 +44,7 @@ import {
   MessageCircle,
   Minus,
   Moon,
+  Music2,
   Pause,
   Play,
   Plus,
@@ -55,6 +56,7 @@ import {
   TimerReset,
   Trophy,
   Users,
+  Volume2,
   X,
   Zap,
 } from "lucide-react";
@@ -414,7 +416,7 @@ function Shell({ children }: { children: ReactNode }) {
             drafts stay in this browser.
           </p>
         </aside>
-        <main className="min-w-0 flex-1 pb-24 lg:pb-8">
+        <main className="min-w-0 flex-1 pb-[12rem] lg:pb-24">
           <header className="flex items-center justify-between px-4 py-4 sm:px-8 lg:px-10">
             <div className="flex items-center gap-3 lg:hidden">
               <Link
@@ -478,7 +480,7 @@ function Shell({ children }: { children: ReactNode }) {
       </nav>
       {mobileMore && (
         <div
-          className="fixed bottom-[4.5rem] right-2 z-30 w-[min(22rem,calc(100vw-1rem))] rounded-2xl border border-border bg-card p-2 shadow-xl lg:hidden"
+          className="fixed bottom-[10rem] right-2 z-30 w-[min(22rem,calc(100vw-1rem))] rounded-2xl border border-border bg-card p-2 shadow-xl lg:hidden"
           aria-label="More pages"
         >
           {navItems.slice(4).map(({ href, label, icon: Icon }) => (
@@ -1801,7 +1803,7 @@ function FocusPage() {
   );
 }
 
-function FloatingDock() {
+function FloatingDock({ onOpenPlayer }: { onOpenPlayer: () => void }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const dragging = useRef(false);
@@ -1841,7 +1843,7 @@ function FloatingDock() {
   ];
   return (
     <div
-      className="fixed bottom-[5.5rem] right-3 z-30 sm:bottom-6 sm:right-5"
+      className="fixed bottom-[10rem] right-3 z-30 sm:bottom-40 sm:right-5 lg:bottom-28"
       style={{ transform: `translate(${pos.x}px,${pos.y}px)` }}
       data-testid="floating-focus-dock"
     >
@@ -1877,16 +1879,18 @@ function FloatingDock() {
                 {label}
               </Link>
             ))}
-            <a
-              href="https://music.youtube.com/search?q=lo-fi%20study%20music"
-              target="_blank"
-              rel="noreferrer"
-              className="focus-ring flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-primary hover:bg-muted"
-              data-testid="link-dock-lofi"
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onOpenPlayer();
+              }}
+              className="focus-ring flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-semibold text-primary hover:bg-muted"
+              data-testid="button-open-lofi-player"
             >
-              <Play size={15} /> Find lo-fi audio on YouTube Music{" "}
+              <Music2 size={15} /> Open Study Hive music player{" "}
               <ArrowRight size={12} />
-            </a>
+            </button>
             <Link
               href="/library"
               className="focus-ring flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-primary hover:bg-muted"
@@ -1898,6 +1902,313 @@ function FloatingDock() {
         )}
       </div>
     </div>
+  );
+}
+
+function formatAudioTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const wholeSeconds = Math.floor(seconds);
+  return `${Math.floor(wholeSeconds / 60)}:${String(wholeSeconds % 60).padStart(2, "0")}`;
+}
+
+function StudyMusicPlayer({
+  expanded,
+  setExpanded,
+}: {
+  expanded: boolean;
+  setExpanded: Dispatch<SetStateAction<boolean>>;
+}) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(49.3);
+  const [volume, setVolume] = useState(0.65);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [expanded, setExpanded]);
+
+  const togglePlayback = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      try {
+        await audio.play();
+        setError("");
+      } catch {
+        setError("Playback did not start. Try pressing play again.");
+      }
+    } else {
+      audio.pause();
+    }
+  };
+
+  const seek = (value: string) => {
+    const time = Number(value);
+    if (!Number.isFinite(time) || !audioRef.current) return;
+    audioRef.current.currentTime = time;
+    setCurrentTime(time);
+  };
+
+  const renderProgress = (surface: "mobile" | "desktop" | "expanded") => (
+    <input
+      type="range"
+      min={0}
+      max={duration || 49.3}
+      step={0.1}
+      value={Math.min(currentTime, duration || 49.3)}
+      onChange={(event) => seek(event.target.value)}
+      aria-label={`Seek through Warm Rain (${surface} player)`}
+      className="h-1.5 w-full cursor-pointer accent-[#1ed760]"
+      data-testid={`input-lofi-seek-${surface}`}
+    />
+  );
+
+  const renderPlayButton = (surface: "mobile" | "desktop" | "expanded") => (
+    <button
+      type="button"
+      onClick={togglePlayback}
+      aria-label={isPlaying ? "Pause lo-fi music" : "Play lo-fi music"}
+      className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1ed760] text-[#102014] transition-transform hover:scale-105"
+      data-testid={`button-lofi-play-${surface}`}
+    >
+      {isPlaying ? <Pause size={19} fill="currentColor" /> : <Play size={19} fill="currentColor" />}
+    </button>
+  );
+
+  const renderCoverArt = (surface: "mobile" | "desktop") => (
+    <div
+      className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[radial-gradient(circle_at_72%_25%,#9ab879_0,transparent_36%),linear-gradient(140deg,#45674b,#263a32_54%,#17201d)] text-white"
+      role="img"
+      aria-label="Warm Rain cover artwork"
+      data-testid={`img-lofi-cover-${surface}`}
+    >
+      <div className="absolute inset-2 rounded-full border border-white/25" />
+      <div className="absolute inset-4 rounded-full border border-white/20" />
+      <Music2 className="relative z-10" size={19} />
+    </div>
+  );
+
+  return (
+    <>
+      <audio
+        ref={audioRef}
+        src={`${import.meta.env.BASE_URL}audio/study-hive-lofi-loop.mp3`}
+        preload="metadata"
+        loop
+        onLoadedMetadata={(event) =>
+          setDuration(event.currentTarget.duration || 49.3)
+        }
+        onTimeUpdate={(event) =>
+          setCurrentTime(event.currentTarget.currentTime)
+        }
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onError={() => setError("The built-in track could not be loaded.")}
+        data-testid="audio-lofi-track"
+      />
+
+      {expanded && (
+        <section
+          className="fixed bottom-[10rem] left-3 right-3 z-40 mx-auto max-h-[calc(100dvh-12rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-white/10 bg-[#151a16] p-5 text-white shadow-2xl sm:left-auto sm:right-5 sm:bottom-[9.5rem] sm:mx-0 sm:p-6 lg:bottom-24"
+          aria-labelledby="lofi-expanded-title"
+          data-testid="panel-lofi-expanded"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_72%_25%,#9ab879_0,transparent_36%),linear-gradient(140deg,#45674b,#263a32_54%,#17201d)]">
+                <div className="absolute inset-3 rounded-full border border-white/25" />
+                <div className="absolute inset-6 rounded-full border border-white/20" />
+                <Music2 size={28} className="relative z-10 text-white" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9ab879]">
+                  Study Hive · built-in loop
+                </p>
+                <h2
+                  id="lofi-expanded-title"
+                  className="mt-1 truncate text-xl font-bold"
+                >
+                  Warm Rain
+                </h2>
+                <p className="mt-1 text-xs text-white/60">
+                  Original instrumental · 78 BPM
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              aria-label="Collapse music player"
+              className="focus-ring rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white"
+              data-testid="button-collapse-lofi"
+            >
+              <Minus size={17} />
+            </button>
+          </div>
+
+          <div className="mt-5 flex items-center gap-3 text-[10px] font-mono text-white/50">
+            <span className="w-8 text-right">{formatAudioTime(currentTime)}</span>
+            {renderProgress("expanded")}
+            <span className="w-8">{formatAudioTime(duration)}</span>
+          </div>
+
+          <div className="mt-4 flex items-center justify-center gap-5">
+            <button
+              type="button"
+              onClick={() => {
+                if (audioRef.current) audioRef.current.currentTime = 0;
+                setCurrentTime(0);
+              }}
+              aria-label="Restart lo-fi track"
+              className="focus-ring rounded-full p-2 text-white/60 hover:text-white"
+              data-testid="button-lofi-restart-expanded"
+            >
+              <RotateCcw size={18} />
+            </button>
+            {renderPlayButton("expanded")}
+            <span className="flex items-center gap-1.5 text-xs text-white/60">
+              <RotateCcw size={13} /> Loop on
+            </span>
+          </div>
+
+          <label className="mt-5 flex items-center gap-3 text-xs text-white/65">
+            <Volume2 size={16} />
+            <span className="w-12">Volume</span>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={volume}
+              onChange={(event) => setVolume(Number(event.target.value))}
+              aria-label="Music volume"
+              className="h-1.5 flex-1 cursor-pointer accent-[#1ed760]"
+              data-testid="input-lofi-volume-expanded"
+            />
+            <span className="w-9 text-right">{Math.round(volume * 100)}%</span>
+          </label>
+          {error && (
+            <p
+              className="mt-4 rounded-lg bg-white/5 px-3 py-2 text-xs text-[#f2a6a0]"
+              role="status"
+              data-testid="status-lofi-error"
+            >
+              {error}
+            </p>
+          )}
+          <p className="mt-4 border-t border-white/10 pt-3 text-xs leading-5 text-white/45">
+            This original loop plays inside Study Hive and repeats automatically.
+            No music account is needed.
+          </p>
+        </section>
+      )}
+
+      <section
+        className="fixed bottom-20 left-0 right-0 z-30 border-t border-white/10 bg-[#111612] text-white shadow-[0_-12px_35px_rgba(0,0,0,.16)] lg:bottom-0 lg:left-64"
+        aria-label="Study Hive music player"
+        data-testid="in-app-lofi-player"
+      >
+        <div className="mx-auto max-w-[1600px] px-3 py-2 sm:px-5 lg:px-6">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 md:hidden">
+            {renderCoverArt("mobile")}
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold" data-testid="text-lofi-title-mobile">
+                Warm Rain
+              </p>
+              <p className="truncate text-[10px] text-white/55">
+                Study Hive · original loop
+              </p>
+              <div className="mt-1">{renderProgress("mobile")}</div>
+            </div>
+            {renderPlayButton("mobile")}
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              aria-expanded={expanded}
+              aria-label={expanded ? "Collapse music player" : "Expand music player"}
+              className="focus-ring rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white"
+              data-testid="button-expand-lofi-mobile"
+            >
+              {expanded ? <Minus size={16} /> : <Plus size={16} />}
+            </button>
+          </div>
+
+          <div className="hidden items-center gap-5 md:grid md:grid-cols-[minmax(12rem,1fr)_minmax(17rem,1.4fr)_minmax(10rem,1fr)]">
+            <div className="flex min-w-0 items-center gap-3">
+              {renderCoverArt("desktop")}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold" data-testid="text-lofi-title-desktop">
+                  Warm Rain
+                </p>
+                <p className="truncate text-xs text-white/55">
+                  Study Hive · original loop
+                </p>
+              </div>
+            </div>
+
+            <div className="min-w-0">
+              <div className="mb-1 flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (audioRef.current) audioRef.current.currentTime = 0;
+                    setCurrentTime(0);
+                  }}
+                  aria-label="Restart lo-fi track"
+                  className="focus-ring rounded-full p-1.5 text-white/60 hover:text-white"
+                  data-testid="button-lofi-restart-desktop"
+                >
+                  <RotateCcw size={15} />
+                </button>
+                {renderPlayButton("desktop")}
+                <span className="text-[10px] text-white/55">LOOP</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] font-mono text-white/50">
+                <span>{formatAudioTime(currentTime)}</span>
+                {renderProgress("desktop")}
+                <span>{formatAudioTime(duration)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <Volume2 size={16} className="text-white/60" />
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={volume}
+                onChange={(event) => setVolume(Number(event.target.value))}
+                aria-label="Music volume"
+                className="h-1.5 w-20 cursor-pointer accent-[#1ed760]"
+                data-testid="input-lofi-volume-desktop"
+              />
+              <button
+                type="button"
+                onClick={() => setExpanded((value) => !value)}
+                aria-expanded={expanded}
+                aria-label={expanded ? "Collapse music player" : "Expand music player"}
+                className="focus-ring rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white"
+                data-testid="button-expand-lofi"
+              >
+                {expanded ? <Minus size={16} /> : <Plus size={16} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
 
@@ -2410,6 +2721,7 @@ function AppContent() {
     [] as QuestionDraft[],
   );
   const [debug, setDebug] = useState(false);
+  const [musicExpanded, setMusicExpanded] = useState(false);
   useEffect(() => {
     if (!focus.isRunning) return;
     const timer = window.setTimeout(() => {
@@ -2496,7 +2808,13 @@ function AppContent() {
           <Route component={NotFound} />
         </Switch>
       </Shell>
-      {location !== "/focus" && <FloatingDock />}
+      {location !== "/focus" && (
+        <FloatingDock onOpenPlayer={() => setMusicExpanded(true)} />
+      )}
+      <StudyMusicPlayer
+        expanded={musicExpanded}
+        setExpanded={setMusicExpanded}
+      />
       <DebugPanel />
     </HiveContext.Provider>
   );
