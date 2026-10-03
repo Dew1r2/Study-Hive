@@ -401,7 +401,7 @@ function Shell({ children }: { children: ReactNode }) {
     <div className="hive-shell min-h-[100dvh]">
       <DemoRibbon />
       <div className="mx-auto flex min-h-[calc(100dvh-35px)] max-w-[1600px]">
-        <aside className="hidden w-64 shrink-0 border-r border-border/80 bg-[hsl(42_39%_93%/.72)] px-4 py-6 lg:block">
+        <aside className="hidden w-64 shrink-0 border-r border-border/80 bg-[hsl(224_22%_14%/.88)] px-4 py-6 lg:block">
           <Link
             href="/"
             className="focus-ring mb-9 flex items-center gap-3 rounded-xl px-2"
@@ -641,7 +641,7 @@ function Dashboard() {
   const [showClass, setShowClass] = useState(false);
   return (
     <div className="animate-in">
-      <div className="mb-8 overflow-hidden rounded-[1.6rem] bg-primary px-6 py-8 text-primary-foreground hive-shadow sm:px-10 sm:py-10">
+      <div className="hero-panel relative mb-8 overflow-hidden rounded-[1.6rem] px-6 py-8 text-primary-foreground hive-shadow sm:px-10 sm:py-10">
         <div className="relative z-10 max-w-2xl">
           <p className="eyebrow text-secondary">
             GOOD TO SEE YOU · {learner.grade}
@@ -671,11 +671,20 @@ function Dashboard() {
             </Link>
           </div>
         </div>
-        <div className="mt-8 flex items-end gap-3 sm:absolute sm:bottom-8 sm:right-10 sm:mt-0">
-          <div className="h-20 w-9 rounded-t-full bg-secondary/30" />
-          <div className="h-28 w-10 rounded-t-full bg-secondary/55" />
-          <div className="h-36 w-10 rounded-t-full bg-accent/80" />
-          <div className="h-24 w-10 rounded-t-full bg-secondary/35" />
+        <div className="hero-doodle mt-7 flex items-center justify-center gap-5 sm:absolute sm:bottom-8 sm:right-12 sm:mt-0" aria-hidden="true">
+          <svg viewBox="0 0 220 190" className="h-36 w-44 overflow-visible sm:h-44 sm:w-52" fill="none">
+            <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity=".78">
+              <path d="M91 23h37m-28 0v52L62 150a12 12 0 0 0 10 18h73a12 12 0 0 0 10-18l-38-75V23" />
+              <path d="M78 131c16-9 28 8 44-1 14-8 24 4 39 2M85 112h56" />
+              <path d="M69 151c23-13 45 9 68-2 9-4 17-4 25 0" />
+              <circle cx="37" cy="43" r="9"/><circle cx="20" cy="78" r="5"/><circle cx="49" cy="104" r="7"/>
+              <path d="M37 52v35m-1-18-16 7m17 7 12 21m-12-33 16-17m112-4 16 14m-16-14 2-22m-2 22 21-1" />
+              <path d="M172 33c7-8 15 3 9 8-6 5-12-2-9-8Z" />
+            </g>
+            <path d="M72 143c28-11 42 8 67-2 8-3 13-4 20-2l9 14-8 12H69l-6-11Z" fill="hsl(39 79% 67% / .78)" opacity=".72"/>
+            <text x="10" y="142" fill="currentColor" fontFamily="monospace" fontSize="11" opacity=".72">H₂O</text>
+            <text x="152" y="94" fill="currentColor" fontFamily="monospace" fontSize="11" opacity=".72">NaCl</text>
+          </svg>
         </div>
       </div>
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -1985,7 +1994,7 @@ function MusicTrackChoices({
             aria-pressed={selected}
             className={`focus-ring flex min-w-0 items-center gap-3 rounded-xl border p-2 text-left transition-colors ${
               selected
-                ? "border-[#1ed760]/80 bg-white/[.09]"
+                ? "border-[#d6ad72]/80 bg-white/[.09]"
                 : "border-white/10 bg-white/[.035] hover:bg-white/[.08]"
             }`}
             data-testid={`button-select-track-${track.id}`}
@@ -2006,7 +2015,7 @@ function MusicTrackChoices({
                 {track.description}
               </span>
             </span>
-            {selected && <Check size={15} className="shrink-0 text-[#1ed760]" />}
+            {selected && <Check size={15} className="shrink-0 text-[#d6ad72]" />}
           </button>
         );
       })}
@@ -2153,7 +2162,7 @@ function StudyMusicPlayer({
       value={Math.min(currentTime, duration || 60)}
       onChange={(event) => seek(event.target.value)}
       aria-label={`Seek through ${currentTrack.title} (${surface} player)`}
-      className="h-1.5 w-full cursor-pointer accent-[#1ed760]"
+      className="h-1.5 w-full cursor-pointer accent-[#d6ad72]"
       data-testid={`input-lofi-seek-${surface}`}
     />
   );
@@ -2165,7 +2174,7 @@ function StudyMusicPlayer({
       type="button"
       onClick={togglePlayback}
       aria-label={isPlaying ? "Pause lo-fi music" : "Play lo-fi music"}
-      className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1ed760] text-[#102014] transition-transform hover:scale-105"
+      className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#d6ad72] text-[#1b211c] transition-transform hover:scale-105"
       data-testid={`button-lofi-play-${surface}`}
     >
       {isPlaying ? <Pause size={19} fill="currentColor" /> : <Play size={19} fill="currentColor" />}
@@ -2206,7 +2215,7 @@ function StudyMusicPlayer({
 
       {focusModeOpen && (
         <div
-          className="fixed inset-0 z-[90] overflow-y-auto bg-[#0b110e] text-white [background-image:radial-gradient(circle_at_78%_0%,rgba(92,145,97,.2),transparent_32rem)]"
+          className="focus-room fixed inset-0 z-[90] overflow-y-auto text-white"
           role="dialog"
           aria-modal="true"
           aria-labelledby="focus-session-title"
@@ -2215,7 +2224,7 @@ function StudyMusicPlayer({
           <div className="mx-auto min-h-dvh w-full max-w-[1440px] px-4 pb-6 pt-4 sm:px-8 sm:pb-10 sm:pt-7">
             <header className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1ed760] text-[#102014]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#d6ad72] text-[#1b211c]">
                   <Moon size={20} />
                 </div>
                 <div>
@@ -2241,7 +2250,7 @@ function StudyMusicPlayer({
             </header>
 
             <main className="grid gap-4 py-5 sm:gap-6 sm:py-8 lg:grid-cols-[0.92fr_1.08fr]">
-              <section className="rounded-[1.75rem] border border-white/10 bg-[#121a15]/90 p-5 shadow-2xl sm:p-8">
+              <section className="focus-timer-panel relative overflow-hidden rounded-[1.75rem] border border-white/10 p-5 shadow-2xl sm:p-8">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9ab879]">
                   Pomodoro · {focus.timerMode === "focus" ? "focus block" : "short break"}
                 </p>
@@ -2258,6 +2267,21 @@ function StudyMusicPlayer({
                     ? "One clear task, a calm soundtrack, and a little space to think."
                     : "Your focus block is complete. Rest your eyes, then resume when ready."}
                 </p>
+
+                <div className="focus-window-scene my-5 sm:my-6" aria-hidden="true">
+                  <div className="focus-window">
+                    <span className="window-sun" />
+                    <span className="window-hills" />
+                    <span className="window-canopy" />
+                    <span className="window-rain" />
+                    <span className="window-frame" />
+                  </div>
+                  <div className="window-sill">
+                    <span className="window-mug" />
+                    <span className="window-notebook" />
+                  </div>
+                  <span className="window-caption">A little rain, a little room to think</span>
+                </div>
 
                 <div className="my-6 flex justify-center sm:my-8">
                   <div
@@ -2278,7 +2302,7 @@ function StudyMusicPlayer({
                 <button
                   type="button"
                   onClick={toggleFocusTimer}
-                  className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1ed760] px-5 py-3.5 text-sm font-bold text-[#102014] transition-transform hover:scale-[1.01] sm:py-4"
+                  className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-[#d6ad72] px-5 py-3.5 text-sm font-bold text-[#1b211c] transition-transform hover:scale-[1.01] sm:py-4"
                   data-testid="button-focus-session-toggle"
                 >
                   {focus.isRunning ? (
@@ -2306,7 +2330,7 @@ function StudyMusicPlayer({
                 </p>
               </section>
 
-              <section className="rounded-[1.75rem] border border-white/10 bg-[#121a15]/90 p-5 shadow-2xl sm:p-8">
+              <section className="focus-sound-panel rounded-[1.75rem] border border-white/10 p-5 shadow-2xl sm:p-8">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9ab879]">
@@ -2368,7 +2392,7 @@ function StudyMusicPlayer({
                         setVolume(Number(event.target.value))
                       }
                       aria-label="Focus music volume"
-                      className="h-1.5 w-20 cursor-pointer accent-[#1ed760] sm:w-28"
+                      className="h-1.5 w-20 cursor-pointer accent-[#d6ad72] sm:w-28"
                       data-testid="input-focus-music-volume"
                     />
                   </label>
@@ -2487,7 +2511,7 @@ function StudyMusicPlayer({
               value={volume}
               onChange={(event) => setVolume(Number(event.target.value))}
               aria-label="Music volume"
-              className="h-1.5 flex-1 cursor-pointer accent-[#1ed760]"
+              className="h-1.5 flex-1 cursor-pointer accent-[#d6ad72]"
               data-testid="input-lofi-volume-expanded"
             />
             <span className="w-9 text-right">{Math.round(volume * 100)}%</span>
@@ -2586,7 +2610,7 @@ function StudyMusicPlayer({
                 value={volume}
                 onChange={(event) => setVolume(Number(event.target.value))}
                 aria-label="Music volume"
-                className="h-1.5 w-20 cursor-pointer accent-[#1ed760]"
+                className="h-1.5 w-20 cursor-pointer accent-[#d6ad72]"
                 data-testid="input-lofi-volume-desktop"
               />
               <button

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -28,24 +28,25 @@
 }
 
 :root {
-  --background: 42 36% 95%;
-  --foreground: 193 38% 18%;
-  --border: 40 22% 85%;
-  --input: 40 22% 85%;
-  --ring: 164 46% 32%;
-  --card: 42 48% 98%;
-  --card-foreground: 193 38% 18%;
-  --primary: 164 46% 29%;
-  --primary-foreground: 42 52% 97%;
-  --secondary: 39 75% 65%;
-  --secondary-foreground: 193 38% 18%;
-  --muted: 40 26% 90%;
-  --muted-foreground: 193 16% 42%;
-  --accent: 8 71% 57%;
-  --accent-foreground: 42 52% 97%;
-  --destructive: 6 64% 45%;
+  --background: 225 24% 12%;
+  --foreground: 42 34% 91%;
+  --border: 225 14% 25%;
+  --input: 225 14% 28%;
+  --ring: 40 83% 66%;
+  --card: 224 21% 16%;
+  --card-foreground: 42 34% 91%;
+  --primary: 161 42% 44%;
+  --primary-foreground: 225 26% 10%;
+  --secondary: 39 79% 67%;
+  --secondary-foreground: 225 26% 10%;
+  --muted: 224 17% 21%;
+  --muted-foreground: 220 12% 68%;
+  --accent: 13 66% 65%;
+  --accent-foreground: 225 26% 10%;
+  --destructive: 4 68% 62%;
   --app-font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --app-font-mono: "Space Mono", ui-monospace, monospace;
+  --app-font-display: "Fraunces", Georgia, serif;
   --radius: 0.9rem;
 }
 
@@ -62,6 +63,11 @@ body {
   color: hsl(var(--foreground));
   font-family: var(--app-font-sans);
   -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 {
+  font-family: var(--app-font-display);
+  font-weight: 600;
+  letter-spacing: -0.035em;
 }
 button,
 input,
@@ -83,28 +89,26 @@ button:disabled {
 
 .hive-shell {
   background:
-    radial-gradient(
-      circle at 85% 5%,
-      hsl(39 76% 84% / 0.55),
-      transparent 27rem
-    ),
+    radial-gradient(circle at 78% 2%, hsl(161 34% 30% / 0.16), transparent 31rem),
+    radial-gradient(circle at 5% 52%, hsl(39 65% 43% / 0.06), transparent 24rem),
     hsl(var(--background));
 }
 .hive-grid {
   background-image:
-    linear-gradient(hsl(164 46% 29% / 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(164 46% 29% / 0.045) 1px, transparent 1px);
+    linear-gradient(hsl(161 42% 65% / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(161 42% 65% / 0.05) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 .hive-shadow {
   box-shadow:
-    0 20px 50px hsl(193 38% 18% / 0.08),
-    0 2px 8px hsl(193 38% 18% / 0.04);
+    0 22px 55px hsl(228 36% 5% / 0.32),
+    0 2px 10px hsl(228 36% 5% / 0.18);
 }
 .hive-card {
   border: 1px solid hsl(var(--border));
-  background: hsl(var(--card));
+  background: linear-gradient(145deg, hsl(224 21% 17%), hsl(var(--card)));
   border-radius: 1.25rem;
+  box-shadow: 0 10px 30px hsl(228 36% 5% / 0.12);
 }
 .eyebrow {
   font-family: var(--app-font-mono);
@@ -112,7 +116,7 @@ button:disabled {
   text-transform: uppercase;
   font-size: 0.68rem;
   font-weight: 700;
-  color: hsl(var(--primary));
+  color: hsl(39 79% 70%);
 }
 .focus-ring:focus-visible {
   outline: 3px solid hsl(var(--secondary));
@@ -126,6 +130,9 @@ button:disabled {
 }
 .nav-link:hover {
   transform: translateX(3px);
+}
+.nav-link:not([class*="bg-primary"]):hover {
+  background: hsl(224 17% 22%);
 }
 .animate-in {
   animation: rise 0.45s ease both;
@@ -151,9 +158,204 @@ button:disabled {
 }
 .timer-ring {
   background: conic-gradient(
-    hsl(var(--accent)) var(--progress),
-    hsl(var(--muted)) 0
+    hsl(39 79% 67%) var(--progress),
+    hsl(224 13% 29%) 0
   );
+  padding: 7px;
+  box-shadow: 0 0 0 1px hsl(39 79% 67% / .24), 0 14px 48px hsl(0 0% 0% / .26);
+}
+.mobile-bottom-nav {
+  background-color: hsl(224 21% 14% / .96);
+  backdrop-filter: blur(18px);
+}
+.hero-panel {
+  background:
+    radial-gradient(ellipse at 86% 105%, hsl(39 66% 52% / .23), transparent 33%),
+    radial-gradient(ellipse at 88% 12%, hsl(161 42% 55% / .2), transparent 30%),
+    linear-gradient(118deg, hsl(164 35% 20%), hsl(225 24% 18%) 76%);
+  isolation: isolate;
+}
+.hero-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: .18;
+  background-image: radial-gradient(hsl(42 70% 80% / .8) 1px, transparent 1.5px);
+  background-size: 27px 27px;
+  mask-image: linear-gradient(110deg, transparent 28%, #000);
+}
+.hero-doodle {
+  color: hsl(42 45% 87%);
+  filter: drop-shadow(0 8px 12px hsl(0 0% 0% / .16));
+}
+.focus-room {
+  background:
+    radial-gradient(circle at 79% 1%, hsl(161 29% 27% / .27), transparent 34rem),
+    radial-gradient(circle at 9% 95%, hsl(39 43% 30% / .14), transparent 36rem),
+    hsl(225 24% 10%);
+}
+.focus-room::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .055;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+}
+.focus-room > div {
+  position: relative;
+  z-index: 1;
+}
+.focus-timer-panel,
+.focus-sound-panel {
+  background: linear-gradient(150deg, hsl(224 20% 17% / .96), hsl(225 22% 13% / .97));
+  box-shadow: 0 26px 80px hsl(0 0% 0% / .24);
+}
+.focus-timer-panel {
+  border-color: hsl(39 55% 65% / .2);
+}
+.focus-window-scene {
+  position: relative;
+  height: 132px;
+  overflow: hidden;
+  border: 1px solid hsl(39 42% 74% / .25);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, hsl(224 32% 21%), hsl(161 25% 20%));
+  box-shadow: inset 0 0 35px hsl(0 0% 0% / .25), 0 12px 24px hsl(0 0% 0% / .12);
+}
+.focus-window {
+  position: absolute;
+  inset: 0 0 13px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, transparent 49.3%, hsl(36 34% 78% / .55) 49.5% 50.5%, transparent 50.7%),
+    linear-gradient(180deg, transparent 56%, hsl(36 34% 78% / .45) 57% 58.5%, transparent 59%),
+    linear-gradient(155deg, hsl(210 32% 38%), hsl(161 27% 31%) 55%, hsl(155 35% 24%));
+  border: 8px solid hsl(35 24% 57% / .75);
+  border-bottom-width: 9px;
+}
+.window-sun {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  top: 14px;
+  right: 18%;
+  border-radius: 50%;
+  background: hsl(39 78% 70% / .72);
+  box-shadow: 0 0 28px hsl(39 78% 70% / .2);
+}
+.window-hills {
+  position: absolute;
+  inset: 39% -4% -18%;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(170deg, hsl(156 29% 34%), hsl(160 36% 17%));
+  clip-path: polygon(0 41%, 15% 17%, 31% 38%, 48% 4%, 64% 33%, 82% 7%, 100% 35%, 100% 100%, 0 100%);
+}
+.window-canopy {
+  position: absolute;
+  inset: -5% -3% auto;
+  height: 65%;
+  background:
+    radial-gradient(ellipse at 6% 0%, hsl(150 34% 19%) 0 25%, transparent 26%),
+    radial-gradient(ellipse at 25% 10%, hsl(156 38% 21%) 0 21%, transparent 22%),
+    radial-gradient(ellipse at 47% 0%, hsl(151 31% 17%) 0 25%, transparent 26%),
+    radial-gradient(ellipse at 72% 4%, hsl(157 36% 20%) 0 24%, transparent 25%),
+    radial-gradient(ellipse at 95% 2%, hsl(153 35% 17%) 0 25%, transparent 26%);
+}
+.window-rain {
+  position: absolute;
+  inset: 0;
+  opacity: .44;
+  background: repeating-linear-gradient(105deg, transparent 0 22px, hsl(197 45% 86% / .5) 23px, transparent 24px 38px);
+  mask-image: linear-gradient(180deg, #000, transparent 80%);
+}
+.window-frame {
+  position: absolute;
+  inset: -8px;
+  box-shadow: inset 0 0 0 3px hsl(42 36% 80% / .48), inset 0 0 28px hsl(0 0% 0% / .23);
+}
+.window-sill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 15px;
+  background: linear-gradient(180deg, hsl(34 24% 51%), hsl(25 25% 35%));
+}
+.window-mug {
+  position: absolute;
+  right: 19%;
+  bottom: 11px;
+  width: 24px;
+  height: 25px;
+  border-radius: 5px 5px 8px 8px;
+  background: hsl(39 53% 77%);
+  box-shadow: 0 3px 8px hsl(0 0% 0% / .24);
+}
+.window-mug::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 11px;
+  right: -7px;
+  top: 4px;
+  border: 2px solid hsl(39 53% 77%);
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+}
+.window-notebook {
+  position: absolute;
+  right: 27%;
+  bottom: 7px;
+  width: 37px;
+  height: 7px;
+  border-radius: 2px;
+  background: hsl(13 44% 57%);
+  transform: rotate(-8deg);
+}
+.window-caption {
+  position: absolute;
+  left: 12px;
+  bottom: 8px;
+  z-index: 1;
+  color: hsl(42 34% 91% / .78);
+  font-family: var(--app-font-mono);
+  font-size: 8px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.focus-room .timer-ring {
+  background: conic-gradient(hsl(39 79% 67%) var(--progress), hsl(224 13% 29%) 0);
+}
+.focus-room .timer-ring > div {
+  background: hsl(225 25% 12%);
+}
+.focus-room input[type="range"] {
+  accent-color: hsl(39 79% 67%);
+}
+/* A quiet paper-grain texture keeps the dark palette tactile, not glossy. */
+.hive-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: .075;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.24'/%3E%3C/svg%3E");
+}
+::placeholder { color: hsl(220 12% 53%); opacity: 1; }
+input, textarea, select {
+  color: hsl(var(--foreground));
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }
 .table-cell {
   min-height: 68px;
