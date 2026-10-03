@@ -101,6 +101,13 @@ type FocusState = {
   isRunning: boolean;
   selectedSubject: string;
 };
+type AmbientTrack = {
+  id: string;
+  title: string;
+  description: string;
+  filename: string;
+  gradient: string;
+};
 type LearnerDemo = { grade: Grade; xp: number; streak: number };
 
 const STORAGE = {
@@ -258,6 +265,43 @@ const initialFocus: FocusState = {
   isRunning: false,
   selectedSubject: "Mathematics",
 };
+const ambientTracks: AmbientTrack[] = [
+  {
+    id: "rain-window",
+    title: "Rain on the Window",
+    description: "Soft piano beneath gentle, irregular rain patter",
+    filename: "study-hive-rain-window.mp3",
+    gradient: "linear-gradient(145deg, #91b8aa, #3d7168 54%, #1b302e)",
+  },
+  {
+    id: "forest-drizzle",
+    title: "Forest Drizzle",
+    description: "Light canopy rain with a few distant birds",
+    filename: "study-hive-forest-drizzle.mp3",
+    gradient: "linear-gradient(145deg, #bdd093, #617a4b 54%, #253c31)",
+  },
+  {
+    id: "quiet-cafe",
+    title: "Quiet Café",
+    description: "Rain at the window and warm, muted room tone",
+    filename: "study-hive-quiet-cafe.mp3",
+    gradient: "linear-gradient(145deg, #d6ad80, #93684d 54%, #3e2d28)",
+  },
+  {
+    id: "night-rain",
+    title: "Night Rain",
+    description: "Low, steady rainfall with slow, mellow keys",
+    filename: "study-hive-night-rain.mp3",
+    gradient: "linear-gradient(145deg, #9caecb, #526485 54%, #252e43)",
+  },
+  {
+    id: "soft-piano",
+    title: "Soft Piano",
+    description: "Slow felt-style chords with no percussion",
+    filename: "study-hive-soft-piano.mp3",
+    gradient: "linear-gradient(145deg, #e1c999, #9a8060 54%, #44382d)",
+  },
+];
 
 function readStorage<T>(key: string, fallback: T): T {
   try {
@@ -301,6 +345,8 @@ type HiveContextType = {
   setSaved: Dispatch<SetStateAction<string[]>>;
   focus: FocusState;
   setFocus: Dispatch<SetStateAction<FocusState>>;
+  focusModeOpen: boolean;
+  setFocusModeOpen: Dispatch<SetStateAction<boolean>>;
   sessions: StudySession[];
   setSessions: Dispatch<SetStateAction<StudySession[]>>;
   questions: QuestionDraft[];
@@ -1158,7 +1204,7 @@ function Library() {
 }
 
 function TimerCard() {
-  const { focus, setFocus } = useHive();
+  const { focus, setFocus, setFocusModeOpen } = useHive();
   const mins = String(Math.floor(focus.remainingSeconds / 60)).padStart(2, "0");
   const secs = String(focus.remainingSeconds % 60).padStart(2, "0");
   const total = (focus.timerMode === "focus" ? focus.durationMinutes : 5) * 60;
@@ -1214,12 +1260,12 @@ function TimerCard() {
       <div className="flex flex-wrap justify-center gap-3">
         <button
           type="button"
-          onClick={() => setFocus((f) => ({ ...f, isRunning: !f.isRunning }))}
+          onClick={() => setFocusModeOpen(true)}
           className="focus-ring inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground"
           data-testid="button-timer-toggle"
         >
-          {focus.isRunning ? <Pause size={17} /> : <Play size={17} />}{" "}
-          {focus.isRunning ? "Pause" : "Start timer"}
+          <Play size={17} />{" "}
+          {focus.isRunning ? "Open current session" : "Set up Pomodoro"}
         </button>
         <button
           type="button"
@@ -1911,6 +1957,63 @@ function formatAudioTime(seconds: number) {
   return `${Math.floor(wholeSeconds / 60)}:${String(wholeSeconds % 60).padStart(2, "0")}`;
 }
 
+function MusicTrackChoices({
+  selectedTrackId,
+  onSelect,
+  layout = "list",
+}: {
+  selectedTrackId: string;
+  onSelect: (trackId: string) => void;
+  layout?: "list" | "grid";
+}) {
+  return (
+    <div
+      className={
+        layout === "grid"
+          ? "grid gap-2 sm:grid-cols-2"
+          : "grid max-h-56 gap-2 overflow-y-auto pr-1"
+      }
+      data-testid="list-ambient-tracks"
+    >
+      {ambientTracks.map((track) => {
+        const selected = selectedTrackId === track.id;
+        return (
+          <button
+            key={track.id}
+            type="button"
+            onClick={() => onSelect(track.id)}
+            aria-pressed={selected}
+            className={`focus-ring flex min-w-0 items-center gap-3 rounded-xl border p-2 text-left transition-colors ${
+              selected
+                ? "border-[#1ed760]/80 bg-white/[.09]"
+                : "border-white/10 bg-white/[.035] hover:bg-white/[.08]"
+            }`}
+            data-testid={`button-select-track-${track.id}`}
+          >
+            <span
+              className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg text-white"
+              style={{ background: track.gradient }}
+              aria-hidden="true"
+            >
+              <span className="absolute inset-2 rounded-full border border-white/25" />
+              <Music2 className="relative z-10" size={16} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-xs font-bold text-white">
+                {track.title}
+              </span>
+              <span className="mt-0.5 block text-[10px] leading-4 text-white/55">
+                {track.description}
+              </span>
+            </span>
+            {selected && <Check size={15} className="shrink-0 text-[#1ed760]" />}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function StudyMusicPlayer({
   expanded,
   setExpanded,
@@ -1919,24 +2022,96 @@ function StudyMusicPlayer({
   setExpanded: Dispatch<SetStateAction<boolean>>;
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { focus, setFocus, focusModeOpen, setFocusModeOpen } = useHive();
+  const [selectedTrackId, setSelectedTrackId] = useState(ambientTracks[0].id);
+  const currentTrack =
+    ambientTracks.find((track) => track.id === selectedTrackId) ??
+    ambientTracks[0];
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(49.3);
+  const [duration, setDuration] = useState(60);
   const [volume, setVolume] = useState(0.65);
   const [error, setError] = useState("");
+  const sessionDuration =
+    (focus.timerMode === "focus" ? focus.durationMinutes : 5) * 60;
+  const sessionProgress = `${Math.max(
+    0,
+    Math.min(
+      100,
+      ((sessionDuration - focus.remainingSeconds) / sessionDuration) * 100,
+    ),
+  )}%`;
+  const sessionMinutes = String(
+    Math.floor(focus.remainingSeconds / 60),
+  ).padStart(2, "0");
+  const sessionSeconds = String(focus.remainingSeconds % 60).padStart(2, "0");
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.src = `${import.meta.env.BASE_URL}audio/${currentTrack.filename}`;
+    audio.load();
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
   useEffect(() => {
-    if (!expanded) return;
+    if (!focusModeOpen) return;
+    setExpanded(false);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [focusModeOpen, setExpanded]);
+
+  const cancelFocusSession = () => {
+    audioRef.current?.pause();
+    if (audioRef.current) audioRef.current.currentTime = 0;
+    setCurrentTime(0);
+    setFocus((current) => ({
+      ...current,
+      timerMode: "focus",
+      isRunning: false,
+      remainingSeconds: current.durationMinutes * 60,
+    }));
+    setFocusModeOpen(false);
+  };
+
+  useEffect(() => {
+    if (!expanded && !focusModeOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setExpanded(false);
+      if (event.key !== "Escape") return;
+      if (focusModeOpen) cancelFocusSession();
+      else setExpanded(false);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [expanded, setExpanded]);
+  }, [expanded, focusModeOpen, focus.durationMinutes, setExpanded]);
+
+  const selectTrack = (trackId: string) => {
+    if (trackId === selectedTrackId) return;
+    const nextTrack = ambientTracks.find((track) => track.id === trackId);
+    if (!nextTrack) return;
+    const audio = audioRef.current;
+    const shouldResume = Boolean(audio && !audio.paused);
+    if (audio) {
+      audio.pause();
+      audio.src = `${import.meta.env.BASE_URL}audio/${nextTrack.filename}`;
+      audio.load();
+    }
+    setSelectedTrackId(trackId);
+    setCurrentTime(0);
+    setDuration(60);
+    setError("");
+    if (shouldResume && audio) {
+      void audio.play().catch(() => {
+        setError("Playback did not start. Press play to try again.");
+      });
+    }
+  };
 
   const togglePlayback = async () => {
     const audio = audioRef.current;
@@ -1953,6 +2128,13 @@ function StudyMusicPlayer({
     }
   };
 
+  const toggleFocusTimer = () => {
+    if (!focus.isRunning && audioRef.current?.paused) {
+      void togglePlayback();
+    }
+    setFocus((current) => ({ ...current, isRunning: !current.isRunning }));
+  };
+
   const seek = (value: string) => {
     const time = Number(value);
     if (!Number.isFinite(time) || !audioRef.current) return;
@@ -1960,21 +2142,25 @@ function StudyMusicPlayer({
     setCurrentTime(time);
   };
 
-  const renderProgress = (surface: "mobile" | "desktop" | "expanded") => (
+  const renderProgress = (
+    surface: "mobile" | "desktop" | "expanded" | "focus",
+  ) => (
     <input
       type="range"
       min={0}
-      max={duration || 49.3}
+      max={duration || 60}
       step={0.1}
-      value={Math.min(currentTime, duration || 49.3)}
+      value={Math.min(currentTime, duration || 60)}
       onChange={(event) => seek(event.target.value)}
-      aria-label={`Seek through Warm Rain (${surface} player)`}
+      aria-label={`Seek through ${currentTrack.title} (${surface} player)`}
       className="h-1.5 w-full cursor-pointer accent-[#1ed760]"
       data-testid={`input-lofi-seek-${surface}`}
     />
   );
 
-  const renderPlayButton = (surface: "mobile" | "desktop" | "expanded") => (
+  const renderPlayButton = (
+    surface: "mobile" | "desktop" | "expanded" | "focus",
+  ) => (
     <button
       type="button"
       onClick={togglePlayback}
@@ -1990,8 +2176,9 @@ function StudyMusicPlayer({
     <div
       className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[radial-gradient(circle_at_72%_25%,#9ab879_0,transparent_36%),linear-gradient(140deg,#45674b,#263a32_54%,#17201d)] text-white"
       role="img"
-      aria-label="Warm Rain cover artwork"
+      aria-label={`${currentTrack.title} cover artwork`}
       data-testid={`img-lofi-cover-${surface}`}
+      style={{ background: currentTrack.gradient }}
     >
       <div className="absolute inset-2 rounded-full border border-white/25" />
       <div className="absolute inset-4 rounded-full border border-white/20" />
@@ -2003,22 +2190,216 @@ function StudyMusicPlayer({
     <>
       <audio
         ref={audioRef}
-        src={`${import.meta.env.BASE_URL}audio/study-hive-lofi-loop.mp3`}
         preload="metadata"
         loop
         onLoadedMetadata={(event) =>
-          setDuration(event.currentTarget.duration || 49.3)
+          setDuration(event.currentTarget.duration || 60)
         }
         onTimeUpdate={(event) =>
           setCurrentTime(event.currentTarget.currentTime)
         }
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
-        onError={() => setError("The built-in track could not be loaded.")}
+        onError={() => setError(`${currentTrack.title} could not be loaded.`)}
         data-testid="audio-lofi-track"
       />
 
-      {expanded && (
+      {focusModeOpen && (
+        <div
+          className="fixed inset-0 z-[90] overflow-y-auto bg-[#0b110e] text-white [background-image:radial-gradient(circle_at_78%_0%,rgba(92,145,97,.2),transparent_32rem)]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="focus-session-title"
+          data-testid="focus-session-overlay"
+        >
+          <div className="mx-auto min-h-dvh w-full max-w-[1440px] px-4 pb-6 pt-4 sm:px-8 sm:pb-10 sm:pt-7">
+            <header className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1ed760] text-[#102014]">
+                  <Moon size={20} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9ab879]">
+                    Study Hive · focus room
+                  </p>
+                  <p className="text-xs text-white/55">
+                    Your timer and soundtrack stay here until you cancel.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={cancelFocusSession}
+                className="focus-ring flex shrink-0 items-center gap-2 rounded-full bg-[#c94f4b] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-[#dc5d58] sm:px-4 sm:py-2.5 sm:text-sm"
+                aria-label="Cancel session and exit focus mode"
+                data-testid="button-cancel-focus-session"
+              >
+                <X size={16} />
+                <span className="sm:hidden">Cancel</span>
+                <span className="hidden sm:inline">Cancel session</span>
+              </button>
+            </header>
+
+            <main className="grid gap-4 py-5 sm:gap-6 sm:py-8 lg:grid-cols-[0.92fr_1.08fr]">
+              <section className="rounded-[1.75rem] border border-white/10 bg-[#121a15]/90 p-5 shadow-2xl sm:p-8">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9ab879]">
+                  Pomodoro · {focus.timerMode === "focus" ? "focus block" : "short break"}
+                </p>
+                <h1
+                  id="focus-session-title"
+                  className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl"
+                >
+                  {focus.timerMode === "focus"
+                    ? `${focus.selectedSubject} focus`
+                    : "A moment to reset"}
+                </h1>
+                <p className="mt-2 text-sm leading-6 text-white/60">
+                  {focus.timerMode === "focus"
+                    ? "One clear task, a calm soundtrack, and a little space to think."
+                    : "Your focus block is complete. Rest your eyes, then resume when ready."}
+                </p>
+
+                <div className="my-6 flex justify-center sm:my-8">
+                  <div
+                    className="timer-ring flex h-60 w-60 items-center justify-center rounded-full sm:h-72 sm:w-72"
+                    style={{ "--progress": sessionProgress } as CSSProperties}
+                  >
+                    <div className="flex h-48 w-48 flex-col items-center justify-center rounded-full border border-white/5 bg-[#101712] sm:h-60 sm:w-60">
+                      <span className="font-mono text-6xl font-bold tracking-tight sm:text-7xl">
+                        {sessionMinutes}:{sessionSeconds}
+                      </span>
+                      <span className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
+                        {focus.timerMode === "focus" ? "focus" : "break"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={toggleFocusTimer}
+                  className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1ed760] px-5 py-3.5 text-sm font-bold text-[#102014] transition-transform hover:scale-[1.01] sm:py-4"
+                  data-testid="button-focus-session-toggle"
+                >
+                  {focus.isRunning ? (
+                    <Pause size={18} fill="currentColor" />
+                  ) : (
+                    <Play size={18} fill="currentColor" />
+                  )}
+                  {focus.isRunning
+                    ? "Pause timer"
+                    : focus.timerMode === "break"
+                      ? "Start 5-minute break"
+                      : focus.remainingSeconds < sessionDuration
+                        ? "Resume focus session"
+                        : "Start focus session"}
+                </button>
+                <p
+                  className="mt-3 min-h-5 text-center text-xs text-white/50"
+                  role="status"
+                  aria-live="polite"
+                  data-testid="status-focus-session"
+                >
+                  {focus.isRunning
+                    ? "Timer running · this screen stays open until you cancel."
+                    : "Starting or resuming also plays your selected sound."}
+                </p>
+              </section>
+
+              <section className="rounded-[1.75rem] border border-white/10 bg-[#121a15]/90 p-5 shadow-2xl sm:p-8">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9ab879]">
+                      Sound for this session
+                    </p>
+                    <h2 className="mt-1 text-xl font-bold sm:text-2xl">
+                      {currentTrack.title}
+                    </h2>
+                    <p className="mt-1 text-xs leading-5 text-white/55">
+                      {currentTrack.description}
+                    </p>
+                  </div>
+                  <div
+                    className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-white sm:h-20 sm:w-20"
+                    style={{ background: currentTrack.gradient }}
+                    aria-label={`${currentTrack.title} cover artwork`}
+                    role="img"
+                    data-testid="img-focus-track-cover"
+                  >
+                    <div className="absolute inset-2 rounded-full border border-white/25" />
+                    <Music2 className="relative z-10" size={27} />
+                  </div>
+                </div>
+
+                <div className="mt-5 flex items-center gap-3 text-[10px] font-mono text-white/50">
+                  <span className="w-8 text-right">{formatAudioTime(currentTime)}</span>
+                  {renderProgress("focus")}
+                  <span className="w-8">{formatAudioTime(duration)}</span>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (audioRef.current) audioRef.current.currentTime = 0;
+                        setCurrentTime(0);
+                      }}
+                      aria-label="Restart ambient track"
+                      className="focus-ring rounded-full p-2 text-white/65 hover:bg-white/10 hover:text-white"
+                      data-testid="button-focus-track-restart"
+                    >
+                      <RotateCcw size={17} />
+                    </button>
+                    {renderPlayButton("focus")}
+                    <span className="flex items-center gap-1 text-[10px] text-white/55">
+                      <RotateCcw size={12} /> Loops
+                    </span>
+                  </div>
+                  <label className="flex items-center gap-2 text-white/60">
+                    <Volume2 size={15} />
+                    <input
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={volume}
+                      onChange={(event) =>
+                        setVolume(Number(event.target.value))
+                      }
+                      aria-label="Focus music volume"
+                      className="h-1.5 w-20 cursor-pointer accent-[#1ed760] sm:w-28"
+                      data-testid="input-focus-music-volume"
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-5 border-t border-white/10 pt-4">
+                  <h3 className="mb-3 text-xs font-bold text-white/80">
+                    Choose your ambience
+                  </h3>
+                  <MusicTrackChoices
+                    selectedTrackId={selectedTrackId}
+                    onSelect={selectTrack}
+                    layout="grid"
+                  />
+                </div>
+                {error && (
+                  <p
+                    className="mt-4 rounded-lg bg-white/5 px-3 py-2 text-xs text-[#ffaaa4]"
+                    role="status"
+                    data-testid="status-focus-audio-error"
+                  >
+                    {error}
+                  </p>
+                )}
+              </section>
+            </main>
+          </div>
+        </div>
+      )}
+
+      {expanded && !focusModeOpen && (
         <section
           className="fixed bottom-[10rem] left-3 right-3 z-40 mx-auto max-h-[calc(100dvh-12rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-white/10 bg-[#151a16] p-5 text-white shadow-2xl sm:left-auto sm:right-5 sm:bottom-[9.5rem] sm:mx-0 sm:p-6 lg:bottom-24"
           aria-labelledby="lofi-expanded-title"
@@ -2026,23 +2407,26 @@ function StudyMusicPlayer({
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_72%_25%,#9ab879_0,transparent_36%),linear-gradient(140deg,#45674b,#263a32_54%,#17201d)]">
+              <div
+                className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl"
+                style={{ background: currentTrack.gradient }}
+              >
                 <div className="absolute inset-3 rounded-full border border-white/25" />
                 <div className="absolute inset-6 rounded-full border border-white/20" />
                 <Music2 size={28} className="relative z-10 text-white" />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9ab879]">
-                  Study Hive · built-in loop
+                  Study Hive · ambient library
                 </p>
                 <h2
                   id="lofi-expanded-title"
                   className="mt-1 truncate text-xl font-bold"
                 >
-                  Warm Rain
+                  {currentTrack.title}
                 </h2>
                 <p className="mt-1 text-xs text-white/60">
-                  Original instrumental · 78 BPM
+                  {currentTrack.description}
                 </p>
               </div>
             </div>
@@ -2061,6 +2445,16 @@ function StudyMusicPlayer({
             <span className="w-8 text-right">{formatAudioTime(currentTime)}</span>
             {renderProgress("expanded")}
             <span className="w-8">{formatAudioTime(duration)}</span>
+          </div>
+
+          <div className="mt-4">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-white/50">
+              Choose a sound
+            </p>
+            <MusicTrackChoices
+              selectedTrackId={selectedTrackId}
+              onSelect={selectTrack}
+            />
           </div>
 
           <div className="mt-4 flex items-center justify-center gap-5">
@@ -2102,14 +2496,14 @@ function StudyMusicPlayer({
             <p
               className="mt-4 rounded-lg bg-white/5 px-3 py-2 text-xs text-[#f2a6a0]"
               role="status"
-              data-testid="status-lofi-error"
+              data-testid="status-lofi-error-expanded"
             >
               {error}
             </p>
           )}
           <p className="mt-4 border-t border-white/10 pt-3 text-xs leading-5 text-white/45">
-            This original loop plays inside Study Hive and repeats automatically.
-            No music account is needed.
+            Five original soundscapes are bundled in Study Hive. They loop
+            automatically and need no music account.
           </p>
         </section>
       )}
@@ -2117,6 +2511,7 @@ function StudyMusicPlayer({
       <section
         className="fixed bottom-20 left-0 right-0 z-30 border-t border-white/10 bg-[#111612] text-white shadow-[0_-12px_35px_rgba(0,0,0,.16)] lg:bottom-0 lg:left-64"
         aria-label="Study Hive music player"
+        aria-hidden={focusModeOpen}
         data-testid="in-app-lofi-player"
       >
         <div className="mx-auto max-w-[1600px] px-3 py-2 sm:px-5 lg:px-6">
@@ -2124,10 +2519,10 @@ function StudyMusicPlayer({
             {renderCoverArt("mobile")}
             <div className="min-w-0">
               <p className="truncate text-sm font-bold" data-testid="text-lofi-title-mobile">
-                Warm Rain
+                {currentTrack.title}
               </p>
               <p className="truncate text-[10px] text-white/55">
-                Study Hive · original loop
+                Study Hive · ambient
               </p>
               <div className="mt-1">{renderProgress("mobile")}</div>
             </div>
@@ -2149,10 +2544,10 @@ function StudyMusicPlayer({
               {renderCoverArt("desktop")}
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold" data-testid="text-lofi-title-desktop">
-                  Warm Rain
+                  {currentTrack.title}
                 </p>
                 <p className="truncate text-xs text-white/55">
-                  Study Hive · original loop
+                  Study Hive · ambient
                 </p>
               </div>
             </div>
@@ -2722,6 +3117,7 @@ function AppContent() {
   );
   const [debug, setDebug] = useState(false);
   const [musicExpanded, setMusicExpanded] = useState(false);
+  const [focusModeOpen, setFocusModeOpen] = useState(false);
   useEffect(() => {
     if (!focus.isRunning) return;
     const timer = window.setTimeout(() => {
@@ -2787,6 +3183,8 @@ function AppContent() {
     setSaved,
     focus,
     setFocus,
+    focusModeOpen,
+    setFocusModeOpen,
     sessions,
     setSessions,
     questions,
