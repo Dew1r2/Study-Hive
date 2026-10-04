@@ -1,4 +1,17 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  ClerkProvider,
+  SignIn,
+  SignUp,
+  useClerk,
+  useUser,
+} from "@clerk/react";
+import { publishableKeyFromHost } from "@clerk/react/internal";
+import { shadcn } from "@clerk/themes";
 import {
   useContext,
   useEffect,
@@ -14,6 +27,7 @@ import {
 } from "react";
 import {
   Link,
+  Redirect,
   Route,
   Router as WouterRouter,
   Switch,
@@ -39,6 +53,7 @@ import {
   Info,
   Keyboard,
   LibraryBig,
+  LogOut,
   LockKeyhole,
   Menu,
   MessageCircle,
@@ -56,6 +71,7 @@ import {
   TimerReset,
   Trophy,
   Users,
+  UserRound,
   Volume2,
   X,
   Zap,
@@ -64,6 +80,84 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
+import ProfilePage from "@/pages/profile";
+import {
+  defaultStudyHiveProfile,
+  readStudyHiveProfile,
+} from "@/lib/study-hive-profile";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const clerkPubKey = publishableKeyFromHost(
+  window.location.hostname,
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+);
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+
+function stripBase(path: string): string {
+  return basePath && path.startsWith(basePath)
+    ? path.slice(basePath.length) || "/"
+    : path;
+}
+
+if (!clerkPubKey) {
+  throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY.");
+}
+
+const clerkAppearance = {
+  theme: shadcn,
+  cssLayerName: "clerk",
+  options: {
+    logoPlacement: "inside" as const,
+    logoLinkUrl: basePath || "/",
+    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
+    socialButtonsPlacement: "top" as const,
+    socialButtonsVariant: "blockButton" as const,
+  },
+  variables: {
+    colorPrimary: "hsl(161 42% 44%)",
+    colorForeground: "hsl(42 34% 91%)",
+    colorMutedForeground: "hsl(220 12% 68%)",
+    colorDanger: "hsl(13 66% 65%)",
+    colorBackground: "hsl(224 21% 16%)",
+    colorInput: "hsl(225 14% 28%)",
+    colorInputForeground: "hsl(42 34% 91%)",
+    colorNeutral: "hsl(225 14% 25%)",
+    fontFamily: "DM Sans, sans-serif",
+    borderRadius: "14px",
+  },
+  elements: {
+    rootBox: "w-full flex justify-center",
+    cardBox:
+      "bg-[hsl(224_21%_16%)] rounded-2xl w-[440px] max-w-full overflow-hidden",
+    card: "!shadow-none !border-0 !bg-transparent !rounded-none",
+    footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
+    headerTitle: "text-[hsl(42_34%_91%)]",
+    headerSubtitle: "text-[hsl(220_12%_76%)]",
+    socialButtonsBlockButtonText: "text-[hsl(42_34%_91%)]",
+    formFieldLabel: "text-[hsl(42_34%_91%)]",
+    footerActionLink: "text-[hsl(39_79%_67%)] hover:text-white",
+    footerActionText: "text-[hsl(220_12%_76%)]",
+    dividerText: "text-[hsl(220_12%_76%)]",
+    identityPreviewEditButton: "text-[hsl(39_79%_67%)]",
+    formFieldSuccessText: "text-[hsl(161_52%_68%)]",
+    alertText: "text-[hsl(42_34%_91%)]",
+    logoBox: "h-10 w-10",
+    logoImage: "h-full w-full object-contain",
+    socialButtonsBlockButton:
+      "border border-[hsl(225_14%_32%)] bg-[hsl(225_14%_24%)] hover:bg-[hsl(225_14%_29%)]",
+    formButtonPrimary:
+      "bg-[hsl(161_42%_44%)] text-[hsl(225_26%_10%)] hover:bg-[hsl(161_42%_50%)]",
+    formFieldInput:
+      "border-[hsl(225_14%_33%)] bg-[hsl(225_20%_12%)] text-[hsl(42_34%_91%)]",
+    footerAction: "border-t border-[hsl(225_14%_28%)]",
+    dividerLine: "bg-[hsl(225_14%_32%)]",
+    alert: "border-[hsl(13_66%_50%)] bg-[hsl(13_30%_18%)]",
+    otpCodeFieldInput:
+      "border-[hsl(225_14%_33%)] bg-[hsl(225_20%_12%)] text-[hsl(42_34%_91%)]",
+    formFieldRow: "gap-1",
+    main: "gap-5",
+  },
+};
 
 type Grade = "S1" | "S2" | "S3" | "S4" | "S5" | "S6";
 type StudyResource = {
@@ -395,12 +489,13 @@ function readStorage<T>(key: string, fallback: T): T {
     const raw = localStorage.getItem(key);
     if (!raw) return fallback;
     const stored = JSON.parse(raw) as T;
-    if (key === STORAGE.learner) {
+    const storageName = key.split(":")[0];
+    if (storageName === STORAGE.learner) {
       const learner = stored as LearnerDemo;
       if (learner.xp === 340 && learner.streak === 4)
         return { ...initialLearner, grade: learner.grade } as T;
     }
-    if (key === STORAGE.focus) {
+    if (storageName === STORAGE.focus) {
       const focus = stored as Partial<FocusState>;
       return {
         ...initialFocus,
@@ -449,25 +544,71 @@ function useHive() {
 }
 
 function DemoRibbon() {
+  const { user } = useUser();
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-primary/15 bg-primary px-4 py-2 text-[11px] font-semibold tracking-wide text-primary-foreground">
       <span className="flex items-center gap-2">
-        <span className="h-2 w-2 rounded-full bg-secondary" /> DEMO MODE · NO
-        ACCOUNT IS SIGNED IN
+        <span className="h-2 w-2 rounded-full bg-secondary" /> STUDY HIVE ·
+        {user ? " SIGNED IN" : " YOUR STUDY DESK"}
       </span>
-      <span className="opacity-85">Your local data stays in this browser.</span>
+      <span className="opacity-85">
+        Study progress is saved on this device.
+      </span>
+    </div>
+  );
+}
+
+function AccountControls() {
+  const { user } = useUser();
+  const { signOut } = useClerk();
+  if (!user) return null;
+  const profile = readStudyHiveProfile(
+    user.unsafeMetadata,
+    user.firstName || defaultStudyHiveProfile.displayName,
+  );
+  return (
+    <div className="ml-auto flex items-center gap-2">
+      <Link
+        href="/profile"
+        className="focus-ring flex min-w-0 items-center gap-2 rounded-xl px-1.5 py-1 hover:bg-card"
+        aria-label="Edit your profile"
+        data-testid="link-account-profile"
+      >
+        <span className={`profile-nav-avatar profile-effect-${profile.effect}`}>
+          {profile.avatar}
+        </span>
+        <span className="hidden min-w-0 text-right sm:block">
+          <strong className="block max-w-36 truncate text-xs">
+            {profile.displayName}
+          </strong>
+          <small className="block text-[10px] text-muted-foreground">
+            My profile
+          </small>
+        </span>
+      </Link>
+      <button
+        type="button"
+        onClick={() => void signOut({ redirectUrl: basePath || "/" })}
+        className="focus-ring rounded-lg border border-border bg-card p-2 text-muted-foreground hover:text-foreground"
+        aria-label="Sign out"
+        title="Sign out"
+        data-testid="button-sign-out"
+      >
+        <LogOut size={16} />
+      </button>
     </div>
   );
 }
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: Home },
+  { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/library", label: "Guides", icon: LibraryBig },
   { href: "/focus", label: "Focus tools", icon: Focus },
   { href: "/peer-learning", label: "Peer learning", icon: Users },
   { href: "/science", label: "Science discovery", icon: Compass },
   { href: "/tutor", label: "Tutor preview", icon: MessageCircle },
   { href: "/classroom", label: "Classroom gateway", icon: LockKeyhole },
+  { href: "/profile", label: "My profile", icon: UserRound },
 ];
 
 function Shell({ children }: { children: ReactNode }) {
@@ -490,7 +631,7 @@ function Shell({ children }: { children: ReactNode }) {
       <div className="mx-auto flex min-h-[calc(100dvh-35px)] max-w-[1600px]">
         <aside className="hidden w-64 shrink-0 border-r border-border/80 bg-[hsl(224_22%_14%/.88)] px-4 py-6 lg:block">
           <Link
-            href="/"
+            href="/dashboard"
             className="focus-ring mb-9 flex items-center gap-3 rounded-xl px-2"
             data-testid="link-logo"
           >
@@ -545,15 +686,15 @@ function Shell({ children }: { children: ReactNode }) {
             </Link>
           </div>
           <p className="mt-10 px-2 text-[11px] leading-5 text-muted-foreground">
-            Local demo only. Do not enter personal details; saved question
-            drafts stay in this browser.
+            Your study activity is saved on this device. Peer profiles and live
+            rooms are not shared in this build.
           </p>
         </aside>
         <main className="min-w-0 flex-1 pb-[12rem] lg:pb-24">
           <header className="flex items-center justify-between px-4 py-4 sm:px-8 lg:px-10">
             <div className="flex items-center gap-3 lg:hidden">
               <Link
-                href="/"
+                href="/dashboard"
                 className="focus-ring flex items-center gap-2"
                 data-testid="link-mobile-logo"
               >
@@ -567,6 +708,7 @@ function Shell({ children }: { children: ReactNode }) {
               <span className="h-2 w-2 rounded-full bg-accent"></span> A quiet
               place to make progress
             </div>
+            <AccountControls />
             <button
               type="button"
               onClick={() => setDebug((v) => !v)}
@@ -3248,24 +3390,31 @@ function DebugPanel() {
         </div>
       </dl>
       <p className="mt-5 border-t border-border pt-4 text-xs leading-5 text-muted-foreground">
-        Browser-only limitations: no account, server, sharing, authentication,
-        live calls, or AI connection.
+        Account sign-in is enabled. Study progress remains local to this device
+        and is not synced between devices; live calls and AI moderation are not
+        connected.
       </p>
     </div>
   );
 }
 
-function AppContent() {
+function AppContent({ userId }: { userId: string }) {
   const [location] = useLocation();
-  const [learner, setLearner] = useStored(STORAGE.learner, initialLearner);
-  const [saved, setSaved] = useStored(STORAGE.saved, [] as string[]);
-  const [focus, setFocus] = useStored(STORAGE.focus, initialFocus);
+  const [learner, setLearner] = useStored(
+    `${STORAGE.learner}:${userId}`,
+    initialLearner,
+  );
+  const [saved, setSaved] = useStored(`${STORAGE.saved}:${userId}`, [] as string[]);
+  const [focus, setFocus] = useStored(
+    `${STORAGE.focus}:${userId}`,
+    initialFocus,
+  );
   const [sessions, setSessions] = useStored(
-    STORAGE.sessions,
+    `${STORAGE.sessions}:${userId}`,
     [] as StudySession[],
   );
   const [questions, setQuestions] = useStored(
-    STORAGE.questions,
+    `${STORAGE.questions}:${userId}`,
     [] as QuestionDraft[],
   );
   const [debug, setDebug] = useState(false);
@@ -3349,13 +3498,14 @@ function AppContent() {
     <HiveContext.Provider value={value}>
       <Shell>
         <Switch>
-          <Route path="/" component={Dashboard} />
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/library" component={Library} />
           <Route path="/focus" component={FocusPage} />
           <Route path="/peer-learning" component={PeerLearning} />
           <Route path="/science" component={Science} />
           <Route path="/tutor" component={Tutor} />
           <Route path="/classroom" component={Classroom} />
+          <Route path="/profile" component={ProfilePage} />
           <Route component={NotFound} />
         </Switch>
       </Shell>
@@ -3371,13 +3521,292 @@ function AppContent() {
   );
 }
 const queryClient = new QueryClient();
+
+function LoadingScreen() {
+  return (
+    <main className="flex min-h-[100dvh] items-center justify-center bg-background px-6 text-sm text-muted-foreground">
+      Preparing your Study Hive…
+    </main>
+  );
+}
+
+function PublicHome() {
+  return (
+    <main className="hive-shell relative min-h-[100dvh] overflow-hidden px-5 py-6 sm:px-10">
+      <div className="pointer-events-none absolute -right-28 -top-32 h-96 w-96 rounded-full bg-primary/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 -left-20 h-96 w-96 rounded-full bg-secondary/10 blur-3xl" />
+      <header className="relative mx-auto flex max-w-6xl items-center justify-between">
+        <Link href="/" className="focus-ring flex items-center gap-3 rounded-xl">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md">
+            <Beaker size={23} />
+          </span>
+          <span>
+            <strong className="block text-lg tracking-tight">Study Hive</strong>
+            <small className="eyebrow">learn together</small>
+          </span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/sign-in"
+            className="focus-ring rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-card"
+            data-testid="link-sign-in"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/sign-up"
+            className="focus-ring rounded-xl bg-secondary px-4 py-2.5 text-sm font-bold text-secondary-foreground"
+            data-testid="link-sign-up"
+          >
+            Create account
+          </Link>
+        </div>
+      </header>
+
+      <section className="relative mx-auto grid min-h-[calc(100dvh-110px)] max-w-6xl items-center gap-12 py-14 lg:grid-cols-[1.1fr_.9fr]">
+        <div className="max-w-2xl">
+          <p className="eyebrow">A calmer way to make progress</p>
+          <h1 className="mt-4 font-display text-5xl font-bold leading-[1.04] tracking-tight sm:text-6xl lg:text-7xl">
+            Your next good
+            <span className="block text-primary">study session</span>
+            starts here.
+          </h1>
+          <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+            Save your guides, focus with a timer, and keep your learning
+            organized in one warm, quiet space.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/sign-up"
+              className="focus-ring inline-flex items-center gap-2 rounded-xl bg-secondary px-5 py-3 font-bold text-secondary-foreground"
+              data-testid="button-home-create-account"
+            >
+              Create your account <ArrowRight size={17} />
+            </Link>
+            <Link
+              href="/sign-in"
+              className="focus-ring rounded-xl border border-border bg-card/70 px-5 py-3 font-semibold hover:bg-card"
+              data-testid="button-home-sign-in"
+            >
+              I already have an account
+            </Link>
+          </div>
+          <p className="mt-4 text-xs leading-5 text-muted-foreground">
+            Sign in with email and password or a social provider enabled for
+            Study Hive.
+          </p>
+        </div>
+
+        <div className="relative mx-auto w-full max-w-md">
+          <div className="absolute -inset-5 rounded-[2rem] bg-primary/10 blur-2xl" />
+          <div className="hive-card relative rounded-[2rem] p-6 sm:p-8">
+            <div className="flex items-center justify-between">
+              <span className="eyebrow">Your study desk</span>
+              <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                Ready when you are
+              </span>
+            </div>
+            <div className="mt-8 rounded-2xl border border-border bg-background/70 p-5">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/20 text-2xl">
+                  🌱
+                </span>
+                <div>
+                  <p className="font-bold">One small step</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    A little focus adds up.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted">
+                <div className="h-full w-2/3 rounded-full bg-primary" />
+              </div>
+              <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+                <span>Focus session</span>
+                <span>25 min</span>
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-border bg-background/60 p-4">
+                <BookOpen size={18} className="text-primary" />
+                <p className="mt-3 text-sm font-semibold">Study guides</p>
+              </div>
+              <div className="rounded-xl border border-border bg-background/60 p-4">
+                <Sparkles size={18} className="text-secondary" />
+                <p className="mt-3 text-sm font-semibold">Small wins</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function HomeRedirect() {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded) return <LoadingScreen />;
+  return isSignedIn ? <Redirect to="/dashboard" /> : <PublicHome />;
+}
+
+function ProtectedApp() {
+  const { isLoaded, isSignedIn, user } = useUser();
+  if (!isLoaded) return <LoadingScreen />;
+  if (!isSignedIn || !user) return <Redirect to="/" />;
+  return <AppContent key={user.id} userId={user.id} />;
+}
+
+function SignInPage() {
+  return (
+    <main className="hive-shell min-h-[100dvh] px-4 py-6 sm:px-8">
+      <header className="mx-auto flex max-w-6xl items-center justify-between">
+        <Link href="/" className="focus-ring flex items-center gap-3 rounded-xl">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Beaker size={21} />
+          </span>
+          <strong className="text-lg">Study Hive</strong>
+        </Link>
+        <Link
+          href="/sign-up"
+          className="focus-ring rounded-lg px-3 py-2 text-sm font-semibold text-primary hover:bg-card"
+        >
+          Create account
+        </Link>
+      </header>
+      <div className="mx-auto grid max-w-6xl items-center gap-8 py-10 lg:min-h-[calc(100dvh-96px)] lg:grid-cols-[1fr_440px]">
+        <div className="hidden max-w-lg lg:block">
+          <p className="eyebrow">Welcome back</p>
+          <h1 className="mt-3 font-display text-5xl font-bold leading-tight">
+            Pick up where
+            <span className="block text-primary">you left off.</span>
+          </h1>
+          <p className="mt-5 text-base leading-7 text-muted-foreground">
+            Your profile and study space are waiting. Use the password reset
+            link in the sign-in form if you need a new password.
+          </p>
+        </div>
+        <div className="hive-card mx-auto w-full max-w-[440px] rounded-2xl p-3 sm:p-5">
+          <SignIn
+            routing="path"
+            path={`${basePath}/sign-in`}
+            signUpUrl={`${basePath}/sign-up`}
+            forceRedirectUrl={`${basePath}/dashboard`}
+          />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function SignUpPage() {
+  return (
+    <main className="hive-shell min-h-[100dvh] px-4 py-6 sm:px-8">
+      <header className="mx-auto flex max-w-6xl items-center justify-between">
+        <Link href="/" className="focus-ring flex items-center gap-3 rounded-xl">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Beaker size={21} />
+          </span>
+          <strong className="text-lg">Study Hive</strong>
+        </Link>
+        <Link
+          href="/sign-in"
+          className="focus-ring rounded-lg px-3 py-2 text-sm font-semibold text-primary hover:bg-card"
+        >
+          Sign in
+        </Link>
+      </header>
+      <div className="mx-auto grid max-w-6xl items-center gap-8 py-10 lg:min-h-[calc(100dvh-96px)] lg:grid-cols-[1fr_440px]">
+        <div className="hidden max-w-lg lg:block">
+          <p className="eyebrow">Make room to learn</p>
+          <h1 className="mt-3 font-display text-5xl font-bold leading-tight">
+            Start with one
+            <span className="block text-primary">small step.</span>
+          </h1>
+          <p className="mt-5 text-base leading-7 text-muted-foreground">
+            Create an account to personalize your profile and keep your Study
+            Hive space ready for the next session.
+          </p>
+        </div>
+        <div className="hive-card mx-auto w-full max-w-[440px] rounded-2xl p-3 sm:p-5">
+          <SignUp
+            routing="path"
+            path={`${basePath}/sign-up`}
+            signInUrl={`${basePath}/sign-in`}
+            forceRedirectUrl={`${basePath}/dashboard`}
+          />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function ClerkQueryClientCacheInvalidator() {
+  const { addListener } = useClerk();
+  const queryClient = useQueryClient();
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    const unsubscribe = addListener(({ user }) => {
+      const userId = user?.id ?? null;
+      if (
+        prevUserIdRef.current !== undefined &&
+        prevUserIdRef.current !== userId
+      ) {
+        queryClient.clear();
+      }
+      prevUserIdRef.current = userId;
+    });
+    return unsubscribe;
+  }, [addListener, queryClient]);
+
+  return null;
+}
+
+function ClerkProviderWithRoutes() {
+  const [, setLocation] = useLocation();
+
+  return (
+    <ClerkProvider
+      publishableKey={clerkPubKey}
+      proxyUrl={clerkProxyUrl}
+      appearance={clerkAppearance}
+      signInUrl={`${basePath}/sign-in`}
+      signUpUrl={`${basePath}/sign-up`}
+      localization={{
+        signIn: {
+          start: {
+            title: "Welcome back",
+            subtitle: "Sign in to your Study Hive account",
+          },
+        },
+        signUp: {
+          start: {
+            title: "Create your account",
+            subtitle: "Get started with your own Study Hive profile",
+          },
+        },
+      }}
+      routerPush={(to) => setLocation(stripBase(to))}
+      routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
+    >
+      <ClerkQueryClientCacheInvalidator />
+      <Switch>
+        <Route path="/" component={HomeRedirect} />
+        <Route path="/sign-in/*?" component={SignInPage} />
+        <Route path="/sign-up/*?" component={SignUpPage} />
+        <Route component={ProtectedApp} />
+      </Switch>
+    </ClerkProvider>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+        <WouterRouter base={basePath}>
           <ErrorBoundary>
-            <AppContent />
+            <ClerkProviderWithRoutes />
           </ErrorBoundary>
         </WouterRouter>
         <Toaster />
