@@ -709,7 +709,7 @@ function EmptyState({
 }
 
 function Dashboard() {
-  const { learner, setLearner, saved, sessions } = useHive();
+  const { learner, setLearner, saved, sessions, setFocusModeOpen } = useHive();
   const gradeBooks = samples.filter((item) => item.grade === learner.grade);
   const rank =
     learner.xp >= 1500
@@ -734,21 +734,22 @@ function Dashboard() {
             GOOD TO SEE YOU · {learner.grade}
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">
-            A little focus goes
-            <br className="hidden sm:block" /> a long way.
+            Big ideas start
+            <br className="hidden sm:block" /> with curiosity.
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-6 text-foreground/80 sm:text-base">
-            Study Hive brings practical learning and small study habits into a
-            calm, single-device space.
+            Open your notebook, try something new, and make your next study
+            session count.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              href="/focus"
+            <button
+              type="button"
+              onClick={() => setFocusModeOpen(true)}
               className="focus-ring inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-3 text-sm font-bold text-secondary-foreground hover:brightness-105"
-              data-testid="link-start-focus"
+              data-testid="button-start-focus"
             >
-              Start a focus session <ArrowRight size={16} />
-            </Link>
+              Enter focus room <ArrowRight size={16} />
+            </button>
             <Link
               href="/library"
               className="focus-ring inline-flex items-center gap-2 rounded-xl border border-foreground/25 px-4 py-3 text-sm font-bold text-foreground hover:bg-foreground/10"
@@ -759,18 +760,24 @@ function Dashboard() {
           </div>
         </div>
         <div className="hero-doodle mt-7 flex items-center justify-center gap-5 sm:absolute sm:bottom-8 sm:right-12 sm:mt-0" aria-hidden="true">
-          <svg viewBox="0 0 220 190" className="h-36 w-44 overflow-visible sm:h-44 sm:w-52" fill="none">
-            <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity=".78">
-              <path d="M91 23h37m-28 0v52L62 150a12 12 0 0 0 10 18h73a12 12 0 0 0 10-18l-38-75V23" />
-              <path d="M78 131c16-9 28 8 44-1 14-8 24 4 39 2M85 112h56" />
-              <path d="M69 151c23-13 45 9 68-2 9-4 17-4 25 0" />
-              <circle cx="37" cy="43" r="9"/><circle cx="20" cy="78" r="5"/><circle cx="49" cy="104" r="7"/>
-              <path d="M37 52v35m-1-18-16 7m17 7 12 21m-12-33 16-17m112-4 16 14m-16-14 2-22m-2 22 21-1" />
-              <path d="M172 33c7-8 15 3 9 8-6 5-12-2-9-8Z" />
+          <svg viewBox="0 0 240 190" className="h-44 w-56 overflow-visible sm:h-52 sm:w-64" fill="none">
+            <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity=".82">
+              <path d="M18 162c23-5 41 5 64 1 27-5 44 4 69 1 22-3 40 2 60-2" />
+              <path d="M48 160c18-36 38-75 62-102 5-6 13-6 19 0 25 29 45 68 65 103" />
+              <path d="M104 60c9-7 24-8 34-1m-40 3c14 4 31 4 45-1" />
+              <path d="M72 125c11-5 21 2 30-2m-42 24c14-4 21 4 33 1m65-22c-11-4-20 2-29 5m45 12c-11-2-18 4-27 3" />
+              <path d="M116 50c-11-5-10-13-2-19 6-5 5-10 1-15m8 34c13-3 18-12 11-20m-28 13c-9-5-8-13 0-19" />
+              <path d="M26 83h24l10 9m-10-15 10 15-13-1m132 2 21-15m-9 0 9 0-2 9" />
+              <path d="M29 154l-5-11m13 12 1-14m170 11 7-12m-18 13 1-10" />
+              <path d="M122 62c-1 10 6 13 5 22-1 8 5 12 3 20-2 9 5 15 8 23 2 6 2 12 7 19" stroke="hsl(13 76% 70%)" strokeWidth="4" />
+              <circle cx="87" cy="52" r="2" fill="currentColor" stroke="none" />
+              <circle cx="155" cy="47" r="2.5" fill="currentColor" stroke="none" />
+              <circle cx="171" cy="62" r="1.8" fill="currentColor" stroke="none" />
             </g>
-            <path d="M72 143c28-11 42 8 67-2 8-3 13-4 20-2l9 14-8 12H69l-6-11Z" fill="hsl(39 79% 67% / .78)" opacity=".72"/>
-            <text x="10" y="142" fill="currentColor" fontFamily="monospace" fontSize="11" opacity=".72">H₂O</text>
-            <text x="152" y="94" fill="currentColor" fontFamily="monospace" fontSize="11" opacity=".72">NaCl</text>
+            <path d="M119 65c3 10 0 13 6 20 5 6 0 13 4 19 3 7 8 13 9 21-5-5-11-7-15-13-5-7-3-13-6-20-3-8-8-13-5-21Z" fill="hsl(13 76% 63% / .65)" />
+            <text x="13" y="77" fill="currentColor" fontFamily="monospace" fontSize="8" opacity=".82">ASH CLOUD</text>
+            <text x="171" y="112" fill="currentColor" fontFamily="monospace" fontSize="8" opacity=".82">LAVA</text>
+            <path d="M167 116l-17 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity=".7" />
           </svg>
         </div>
       </div>
@@ -1403,7 +1410,7 @@ function TimerCard() {
           data-testid="button-timer-toggle"
         >
           <Play size={17} />{" "}
-          {focus.isRunning ? "Open current session" : "Set up Pomodoro"}
+          {focus.isRunning ? "Open current session" : "Enter focus room"}
         </button>
         <button
           type="button"
@@ -1988,6 +1995,7 @@ function FocusPage() {
 }
 
 function FloatingDock({ onOpenPlayer }: { onOpenPlayer: () => void }) {
+  const { setFocusModeOpen } = useHive();
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const dragging = useRef(false);
@@ -2056,6 +2064,12 @@ function FloatingDock({ onOpenPlayer }: { onOpenPlayer: () => void }) {
               <Link
                 key={href}
                 href={href}
+                onClick={(event) => {
+                  if (href !== "/focus#timer") return;
+                  event.preventDefault();
+                  setOpen(false);
+                  setFocusModeOpen(true);
+                }}
                 className="focus-ring flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-primary hover:bg-muted"
                 data-testid={`link-dock-${label.toLowerCase().replaceAll(" ", "-")}`}
               >
@@ -2080,7 +2094,7 @@ function FloatingDock({ onOpenPlayer }: { onOpenPlayer: () => void }) {
               className="focus-ring flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-primary hover:bg-muted"
               data-testid="link-dock-books"
             >
-              <BookOpen size={15} /> Practical previews
+              <BookOpen size={15} /> Class guides
             </Link>
           </div>
         )}
@@ -2205,29 +2219,16 @@ function StudyMusicPlayer({
     };
   }, [focusModeOpen, setExpanded]);
 
-  const cancelFocusSession = () => {
-    audioRef.current?.pause();
-    if (audioRef.current) audioRef.current.currentTime = 0;
-    setCurrentTime(0);
-    setFocus((current) => ({
-      ...current,
-      timerMode: "focus",
-      isRunning: false,
-      remainingSeconds: current.durationMinutes * 60,
-    }));
-    setFocusModeOpen(false);
-  };
-
   useEffect(() => {
     if (!expanded && !focusModeOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
-      if (focusModeOpen) cancelFocusSession();
+      if (focusModeOpen) setFocusModeOpen(false);
       else setExpanded(false);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [expanded, focusModeOpen, focus.durationMinutes, setExpanded]);
+  }, [expanded, focusModeOpen, setExpanded, setFocusModeOpen]);
 
   const selectTrack = (trackId: string) => {
     if (trackId === selectedTrackId) return;
@@ -2361,20 +2362,19 @@ function StudyMusicPlayer({
                     Study Hive · focus room
                   </p>
                   <p className="text-xs text-white/55">
-                    Your timer and soundtrack stay here until you cancel.
+                    Close with X to return; your timer and ambience keep their state.
                   </p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={cancelFocusSession}
-                className="focus-ring flex shrink-0 items-center gap-2 rounded-full bg-[#c94f4b] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-[#dc5d58] sm:px-4 sm:py-2.5 sm:text-sm"
-                aria-label="Cancel session and exit focus mode"
-                data-testid="button-cancel-focus-session"
+                onClick={() => setFocusModeOpen(false)}
+                className="focus-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 transition-colors hover:bg-white/10 hover:text-white sm:h-12 sm:w-12"
+                aria-label="Exit focus room"
+                title="Exit focus room"
+                data-testid="button-exit-focus-session"
               >
-                <X size={16} />
-                <span className="sm:hidden">Cancel</span>
-                <span className="hidden sm:inline">Cancel session</span>
+                <X size={20} />
               </button>
             </header>
 
@@ -2454,7 +2454,7 @@ function StudyMusicPlayer({
                   data-testid="status-focus-session"
                 >
                   {focus.isRunning
-                    ? "Timer running · this screen stays open until you cancel."
+                    ? "Timer running · close this room any time; your session continues."
                     : "Starting or resuming also plays your selected sound."}
                 </p>
               </section>

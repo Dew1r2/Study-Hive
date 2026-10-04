@@ -218,7 +218,7 @@ button:disabled {
 }
 .focus-window-scene {
   position: relative;
-  height: 132px;
+  height: 180px;
   overflow: hidden;
   border: 1px solid hsl(39 42% 74% / .25);
   border-radius: 1rem;
@@ -369,5 +369,8 @@ input, textarea, select {
 @media (max-width: 767px) {
   .mobile-bottom-nav {
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  .focus-window-scene {
+    height: 150px;
   }
 }
