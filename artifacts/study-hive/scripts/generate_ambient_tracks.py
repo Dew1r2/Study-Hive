@@ -14,41 +14,45 @@ TRACKS = [
     {
         "filename": "study-hive-rain-window.wav",
         "seed": 117,
-        "rain_density": 32,
-        "rain_bed": 0.82,
-        "drop_gain": 0.95,
-        "piano_gain": 0.023,
+        "rain_density": 22,
+        "rain_bed": 0.7,
+        "drop_gain": 0.5,
+        "piano_gain": 0.018,
         "room_gain": 0.0,
+        "master_gain": 0.58,
         "birds": False,
     },
     {
         "filename": "study-hive-forest-drizzle.wav",
         "seed": 229,
-        "rain_density": 23,
-        "rain_bed": 0.66,
-        "drop_gain": 0.72,
-        "piano_gain": 0.019,
+        "rain_density": 17,
+        "rain_bed": 0.52,
+        "drop_gain": 0.4,
+        "piano_gain": 0.015,
         "room_gain": 0.0,
+        "master_gain": 0.62,
         "birds": True,
     },
     {
         "filename": "study-hive-quiet-cafe.wav",
         "seed": 331,
-        "rain_density": 18,
-        "rain_bed": 0.56,
-        "drop_gain": 0.6,
-        "piano_gain": 0.022,
-        "room_gain": 0.34,
+        "rain_density": 12,
+        "rain_bed": 0.42,
+        "drop_gain": 0.3,
+        "piano_gain": 0.017,
+        "room_gain": 0.28,
+        "master_gain": 0.68,
         "birds": False,
     },
     {
         "filename": "study-hive-night-rain.wav",
         "seed": 443,
-        "rain_density": 17,
-        "rain_bed": 0.7,
-        "drop_gain": 0.55,
-        "piano_gain": 0.018,
+        "rain_density": 12,
+        "rain_bed": 0.52,
+        "drop_gain": 0.3,
+        "piano_gain": 0.014,
         "room_gain": 0.08,
+        "master_gain": 0.6,
         "birds": False,
     },
     {
@@ -59,6 +63,7 @@ TRACKS = [
         "drop_gain": 0.0,
         "piano_gain": 0.042,
         "room_gain": 0.12,
+        "master_gain": 0.95,
         "birds": False,
     },
 ]
@@ -239,7 +244,7 @@ def render_track(track):
             (FRAME_COUNT - frame - 1) / fade_frames,
         )
         for channel in (left[frame], right[frame]):
-            value = tanh(channel * gain * 1.12) * fade
+            value = tanh(channel * gain * 1.12) * fade * track["master_gain"]
             stereo.append(int(max(-1.0, min(1.0, value)) * 32767))
 
     if stereo.itemsize != 2:

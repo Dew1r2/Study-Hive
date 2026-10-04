@@ -66,6 +66,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 type Grade = "S1" | "S2" | "S3" | "S4" | "S5" | "S6";
+type StudyResource = {
+  publisher: string;
+  title: string;
+  format: "Reading" | "Class experiment" | "Interactive" | "Activity";
+  description: string;
+  url: string;
+};
 type PracticalPreview = {
   id: string;
   grade: Grade;
@@ -76,8 +83,8 @@ type PracticalPreview = {
   localAlternatives: string[];
   steps: string[];
   safetyNote: string;
-  videoUrl?: string;
-  verified: boolean;
+  curriculumSource: { title: string; level: string; url: string };
+  learningResource: StudyResource;
 };
 type QuestionDraft = {
   id: string;
@@ -131,19 +138,39 @@ const samples: PracticalPreview[] = [
     id: "p1",
     grade: "S1",
     subject: "Biology",
-    title: "Leaf detectives: testing for starch",
-    objective: "Observe how a leaf stores food after light exposure.",
-    apparatus: ["Fresh green leaf", "Warm water", "Iodine solution", "Cup"],
-    localAlternatives: ["Clean glass", "Small saucepan with adult supervision"],
+    title: "Cell detectives: sketching a plant cell",
+    objective:
+      "Observe a plant-cell sample or image, then make a careful labelled sketch.",
+    apparatus: [
+      "Prepared onion epidermis slide",
+      "Classroom microscope",
+      "Science notebook",
+    ],
+    localAlternatives: [
+      "Teacher-provided cell micrograph",
+      "Printed plant-cell diagram for labelling",
+    ],
     steps: [
-      "Boil the leaf briefly to soften it.",
-      "Place it in warm ethanol only with a trained adult; do not heat ethanol directly.",
-      "Rinse and add iodine solution.",
-      "Record the colour change in a simple table.",
+      "With a teacher, view a prepared onion slide at low magnification.",
+      "Sketch the repeating cell shapes you can actually see.",
+      "Label visible structures only; do not guess at details that are unclear.",
+      "Compare your sketch with a plant-cell diagram and note one difference.",
     ],
     safetyNote:
-      "Preview procedure: ask a teacher to demonstrate the ethanol step. Never heat ethanol over a flame.",
-    verified: false,
+      "Use glass slides and microscopes with teacher guidance. Carry slides by the edges and never handle broken glass.",
+    curriculumSource: {
+      title: "NCDC Biology syllabus",
+      level: "Lower Secondary · S1–S4",
+      url: "https://ncdc.go.ug/wp-content/uploads/2024/02/Biology_Syllabus_compressed.pdf",
+    },
+    learningResource: {
+      publisher: "OpenStax",
+      title: "Eukaryotic cells",
+      format: "Reading",
+      description:
+        "Illustrated background on plant and animal cells, including cell structures.",
+      url: "https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells",
+    },
   },
   {
     id: "p2",
@@ -165,7 +192,19 @@ const samples: PracticalPreview[] = [
     ],
     safetyNote:
       "Do not taste materials. Use eye protection and teacher supervision during heating.",
-    verified: false,
+    curriculumSource: {
+      title: "NCDC Chemistry syllabus",
+      level: "Lower Secondary · S1–S4",
+      url: "https://ncdc.go.ug/wp-content/uploads/2024/03/CHEMISTRY-SYLLABUS_corrected_web-file_compressed.pdf",
+    },
+    learningResource: {
+      publisher: "Royal Society of Chemistry",
+      title: "Separating sand and salt by filtering and evaporation",
+      format: "Class experiment",
+      description:
+        "A classroom experiment with a diagram, teaching notes, and safety guidance.",
+      url: "https://edu.rsc.org/experiments/separating-sand-and-salt-by-filtering-and-evaporation/386.article",
+    },
   },
   {
     id: "p3",
@@ -188,7 +227,19 @@ const samples: PracticalPreview[] = [
     ],
     safetyNote:
       "Use low-voltage cells only. Never connect wires to a wall socket.",
-    verified: false,
+    curriculumSource: {
+      title: "NCDC Physics syllabus",
+      level: "Lower Secondary · S1–S4",
+      url: "https://ncdc.go.ug/wp-content/uploads/2024/02/PHYSICS_Syllabus_compressed.pdf",
+    },
+    learningResource: {
+      publisher: "PhET Interactive Simulations · University of Colorado Boulder",
+      title: "Circuit Construction Kit: DC",
+      format: "Interactive",
+      description:
+        "Build low-voltage circuits and explore how a complete loop works.",
+      url: "https://phet.colorado.edu/en/simulations/circuit-construction-kit-dc-virtual-lab",
+    },
   },
   {
     id: "p4",
@@ -209,7 +260,19 @@ const samples: PracticalPreview[] = [
     ],
     safetyNote:
       "Place the container where it cannot trip anyone. Do not collect drinking water from it.",
-    verified: false,
+    curriculumSource: {
+      title: "NCDC Geography syllabus",
+      level: "Lower Secondary · S1–S4",
+      url: "https://ncdc.go.ug/wp-content/uploads/2024/02/Georgraphy-Syllabus.pdf",
+    },
+    learningResource: {
+      publisher: "NOAA NESDIS",
+      title: "Activity: Measure Rainfall",
+      format: "Activity",
+      description:
+        "A classroom rainfall-measurement activity using simple recycled materials.",
+      url: "https://www.nesdis.noaa.gov/about/k-12-education/atmosphere/activity-measure-rainfall",
+    },
   },
   {
     id: "p5",
@@ -226,8 +289,20 @@ const samples: PracticalPreview[] = [
       "Compare evidence and write a conclusion.",
     ],
     safetyNote:
-      "Wash hands after handling materials. Do not consume the samples.",
-    verified: false,
+      "Have a teacher or adult prepare the potato strips. Wash hands after handling materials and do not consume the samples.",
+    curriculumSource: {
+      title: "NCDC Advanced Biology syllabus",
+      level: "Advanced Secondary · S5–S6",
+      url: "https://ncdc.go.ug/wp-content/uploads/2025/03/Biology.pdf",
+    },
+    learningResource: {
+      publisher: "OpenStax",
+      title: "Passive transport",
+      format: "Reading",
+      description:
+        "Explains diffusion and osmosis with examples and a plant-cell connection.",
+      url: "https://openstax.org/books/biology-2e/pages/5-2-passive-transport",
+    },
   },
   {
     id: "p6",
@@ -238,7 +313,7 @@ const samples: PracticalPreview[] = [
     apparatus: [
       "Red cabbage extract",
       "Lemon juice",
-      "Soap solution",
+      "Diluted mild soap solution",
       "Clear cups",
     ],
     localAlternatives: [
@@ -253,7 +328,19 @@ const samples: PracticalPreview[] = [
     ],
     safetyNote:
       "Wear eye protection and do not mix unknown household cleaners.",
-    verified: false,
+    curriculumSource: {
+      title: "NCDC Advanced Chemistry syllabus",
+      level: "Advanced Secondary · S5–S6",
+      url: "https://ncdc.go.ug/wp-content/uploads/2025/03/CHEMISTRY.pdf",
+    },
+    learningResource: {
+      publisher: "PhET Interactive Simulations · University of Colorado Boulder",
+      title: "Acid-Base Solutions",
+      format: "Interactive",
+      description:
+        "Explore acid and base strength, particles, and solution concentration.",
+      url: "https://phet.colorado.edu/en/simulations/acid-base-solutions",
+    },
   },
 ];
 
@@ -375,7 +462,7 @@ function DemoRibbon() {
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
-  { href: "/library", label: "Practical library", icon: LibraryBig },
+  { href: "/library", label: "Guides", icon: LibraryBig },
   { href: "/focus", label: "Focus tools", icon: Focus },
   { href: "/peer-learning", label: "Peer learning", icon: Users },
   { href: "/science", label: "Science discovery", icon: Compass },
@@ -641,7 +728,7 @@ function Dashboard() {
   const [showClass, setShowClass] = useState(false);
   return (
     <div className="animate-in">
-      <div className="hero-panel relative mb-8 overflow-hidden rounded-[1.6rem] px-6 py-8 text-primary-foreground hive-shadow sm:px-10 sm:py-10">
+      <div className="hero-panel relative mb-8 overflow-hidden rounded-[1.6rem] px-6 py-8 text-foreground hive-shadow sm:px-10 sm:py-10">
         <div className="relative z-10 max-w-2xl">
           <p className="eyebrow text-secondary">
             GOOD TO SEE YOU · {learner.grade}
@@ -650,24 +737,24 @@ function Dashboard() {
             A little focus goes
             <br className="hidden sm:block" /> a long way.
           </h1>
-          <p className="mt-4 max-w-lg text-sm leading-6 text-primary-foreground/75 sm:text-base">
+          <p className="mt-4 max-w-lg text-sm leading-6 text-foreground/80 sm:text-base">
             Study Hive brings practical learning and small study habits into a
             calm, single-device space.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               href="/focus"
-              className="focus-ring inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-3 text-sm font-bold text-foreground hover:brightness-105"
+              className="focus-ring inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-3 text-sm font-bold text-secondary-foreground hover:brightness-105"
               data-testid="link-start-focus"
             >
               Start a focus session <ArrowRight size={16} />
             </Link>
             <Link
               href="/library"
-              className="focus-ring inline-flex items-center gap-2 rounded-xl border border-primary-foreground/25 px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-foreground/10"
+              className="focus-ring inline-flex items-center gap-2 rounded-xl border border-foreground/25 px-4 py-3 text-sm font-bold text-foreground hover:bg-foreground/10"
               data-testid="link-open-library"
             >
-              Browse practicals <BookOpen size={16} />
+              Browse class guides <BookOpen size={16} />
             </Link>
           </div>
         </div>
@@ -764,7 +851,7 @@ function Dashboard() {
             <div>
               <p className="eyebrow">Your next small step</p>
               <h2 className="mt-1 text-xl font-bold">
-                Practical previews for {learner.grade}
+                Class guides for {learner.grade}
               </h2>
             </div>
             <Link
@@ -886,7 +973,6 @@ function BookCard({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const isSaved = saved.includes(book.id);
-  const youtubeSearch = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${book.title} science practical demonstration`)}`;
   useEffect(() => {
     if (!open) return;
     const previousFocus =
@@ -952,7 +1038,7 @@ function BookCard({
         </p>
         <div className="mt-5 flex items-center justify-between border-t border-border/70 pt-4">
           <span className="text-[11px] font-semibold text-muted-foreground">
-            Sample activity · not NCDC-verified
+            NCDC syllabus linked · study guide
           </span>
           <button
             type="button"
@@ -961,7 +1047,7 @@ function BookCard({
             className="focus-ring inline-flex items-center gap-1 text-xs font-bold text-primary"
             data-testid={`button-open-book-${book.id}`}
           >
-            Read preview <ArrowRight size={13} />
+            Open guide <ArrowRight size={13} />
           </button>
         </div>
       </article>
@@ -1000,7 +1086,7 @@ function BookCard({
                 type="button"
                 onClick={() => setOpen(false)}
                 className="focus-ring rounded-lg p-2 text-muted-foreground hover:bg-muted"
-                aria-label="Close practical preview"
+                aria-label="Close guide preview"
                 data-testid={`button-close-book-${book.id}`}
               >
                 <X size={19} />
@@ -1048,20 +1134,45 @@ function BookCard({
                 {book.safetyNote}
               </p>
             </div>
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
-              <p className="max-w-sm text-xs leading-5 text-muted-foreground">
-                Sample activity only. Check all methods with a teacher and your
-                approved curriculum materials.
-              </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <a
-                href={youtubeSearch}
+                href={book.curriculumSource.url}
                 target="_blank"
                 rel="noreferrer"
-                className="focus-ring inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-bold text-primary"
-                data-testid={`link-youtube-search-${book.id}`}
+                className="focus-ring rounded-2xl border border-border bg-muted/60 p-4 transition-colors hover:bg-muted"
+                data-testid={`link-ncdc-syllabus-${book.id}`}
               >
-                Search demos on YouTube <ArrowRight size={14} />
+                <span className="eyebrow">Official syllabus reference</span>
+                <span className="mt-2 block font-bold">
+                  {book.curriculumSource.title}
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  {book.curriculumSource.level} · Open NCDC PDF
+                </span>
               </a>
+              <a
+                href={book.learningResource.url}
+                target="_blank"
+                rel="noreferrer"
+                className="focus-ring rounded-2xl border border-border bg-muted/60 p-4 transition-colors hover:bg-muted"
+                data-testid={`link-learning-resource-${book.id}`}
+              >
+                <span className="eyebrow">
+                  {book.learningResource.format} · {book.learningResource.publisher}
+                </span>
+                <span className="mt-2 block font-bold">
+                  {book.learningResource.title}
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {book.learningResource.description}
+                </span>
+              </a>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
+              <p className="max-w-sm text-xs leading-5 text-muted-foreground">
+                This is a Study Hive learning aid, not an NCDC-approved
+                procedure. Follow your teacher’s method and safety instructions.
+              </p>
             </div>
           </section>
         </div>
@@ -1081,22 +1192,40 @@ function Library() {
       grades.indexOf(b.grade) <= unlockedThrough &&
       (grade === "all" || b.grade === grade) &&
       (subject === "all" || b.subject === subject) &&
-      (b.title + " " + b.objective + " " + b.subject)
+      (
+        b.title +
+        " " +
+        b.objective +
+        " " +
+        b.subject +
+        " " +
+        b.curriculumSource.title +
+        " " +
+        b.learningResource.title
+      )
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
   return (
     <div>
       <PageHeading
-        kicker="Practical previews"
-        title="Learning you can hold onto."
-        description="Browse small, practical activities by class and subject. These are clearly marked previews, not verified NCDC publications."
+        kicker="NCDC class guides"
+        title="Your class, your next experiment."
+        description="Browse practical study guides by Senior 1–Senior 6 and subject. Each guide links to its official NCDC subject syllabus and a trusted learning resource."
         action={
-          <SoftBadge tone="coral">
-            <Info size={13} className="mr-1" /> Content verification pending
+          <SoftBadge tone="gold">
+            <Info size={13} className="mr-1" /> Official references linked
           </SoftBadge>
         }
       />
+      <div className="hive-card mb-6 flex gap-3 p-4 text-sm sm:p-5">
+        <Info className="mt-0.5 shrink-0 text-primary" size={18} />
+        <p className="leading-6 text-muted-foreground">
+          NCDC links go to official syllabi. Activity steps are Study Hive
+          learning aids, not NCDC-approved practical procedures; check them
+          with your teacher before trying anything.
+        </p>
+      </div>
       <section
         className="hive-card mb-6 p-5"
         aria-label="Progressive study access"
@@ -1139,7 +1268,7 @@ function Library() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             type="search"
-            placeholder="Search practicals"
+            placeholder="Search guides, topics, or resources"
             className="focus-ring h-11 w-full rounded-xl border border-border bg-background pl-10 pr-3 text-sm"
             data-testid="input-search-practicals"
           />
@@ -1172,7 +1301,7 @@ function Library() {
       </div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          <strong className="text-foreground">{filtered.length}</strong> preview
+          <strong className="text-foreground">{filtered.length}</strong> guide
           {filtered.length === 1 ? "" : "s"} found · showing unlocked levels
           through <strong className="text-primary">{learner.grade}</strong>
         </p>
@@ -1181,7 +1310,7 @@ function Library() {
       {filtered.length === 0 ? (
         <EmptyState
           icon={Search}
-          title="No previews match that search"
+          title="No guides match that search"
           body="Try a broader subject, class, or a shorter search phrase."
         />
       ) : (
@@ -1194,18 +1323,18 @@ function Library() {
       <div className="mt-8 flex gap-3 rounded-2xl border border-secondary/50 bg-secondary/20 p-5 text-sm">
         <Info className="mt-0.5 shrink-0 text-primary" size={18} />
         <p className="leading-6">
-          Preview note: study material is sample content for this local demo and
-          has not been verified against current NCDC sources.{" "}
+          These guides are study aids, not official publications or a substitute
+          for teacher instruction.{" "}
           <a
-            href="https://ncdc.go.ug/"
+            href="https://ncdc.go.ug/books"
             target="_blank"
             rel="noreferrer"
             className="font-bold text-primary underline"
-            data-testid="link-ncdc-source"
+            data-testid="link-ncdc-books"
           >
-            Visit the NCDC source
+            Browse NCDC books
           </a>{" "}
-          to cross-check official materials.
+          to find current curriculum materials.
         </p>
       </div>
     </div>
@@ -1898,7 +2027,7 @@ function FloatingDock({ onOpenPlayer }: { onOpenPlayer: () => void }) {
   ];
   return (
     <div
-      className="fixed bottom-[10rem] right-3 z-30 sm:bottom-40 sm:right-5 lg:bottom-28"
+      className="fixed bottom-[10rem] right-3 z-30 hidden md:block sm:bottom-40 sm:right-5 lg:bottom-28"
       style={{ transform: `translate(${pos.x}px,${pos.y}px)` }}
       data-testid="floating-focus-dock"
     >
@@ -2039,7 +2168,7 @@ function StudyMusicPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(60);
-  const [volume, setVolume] = useState(0.65);
+  const [volume, setVolume] = useState(0.4);
   const [error, setError] = useState("");
   const sessionDuration =
     (focus.timerMode === "focus" ? focus.durationMinutes : 5) * 60;

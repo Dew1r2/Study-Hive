@@ -1,0 +1,1 @@
+- [Study Hive visual/audio direction](study-hive-visual-audio.md) — Keep the warm, dark science look and quiet ambient rain consistent across the app.
