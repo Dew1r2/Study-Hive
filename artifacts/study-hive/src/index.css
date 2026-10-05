@@ -1,5 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap");
+@layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
+@import "@clerk/themes/shadcn.css";
 @import "tw-animate-css";
 
 @theme inline {
@@ -21,6 +23,7 @@
   --color-destructive: hsl(var(--destructive));
   --font-sans: var(--app-font-sans);
   --font-mono: var(--app-font-mono);
+  --font-display: var(--app-font-display);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -46,7 +49,7 @@
   --destructive: 4 68% 62%;
   --app-font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --app-font-mono: "Space Mono", ui-monospace, monospace;
-  --app-font-display: "Fraunces", Georgia, serif;
+  --app-font-display: "Nunito", "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --radius: 0.9rem;
 }
 
@@ -66,8 +69,9 @@ body {
 }
 h1, h2, h3 {
   font-family: var(--app-font-display);
-  font-weight: 600;
-  letter-spacing: -0.035em;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.16;
 }
 button,
 input,
@@ -107,7 +111,7 @@ button:disabled {
 .hive-card {
   border: 1px solid hsl(var(--border));
   background: linear-gradient(145deg, hsl(224 21% 17%), hsl(var(--card)));
-  border-radius: 1.25rem;
+  border-radius: 1.4rem;
   box-shadow: 0 10px 30px hsl(228 36% 5% / 0.12);
 }
 .eyebrow {
@@ -186,8 +190,51 @@ button:disabled {
   mask-image: linear-gradient(110deg, transparent 28%, #000);
 }
 .hero-doodle {
-  color: hsl(42 45% 87%);
-  filter: drop-shadow(0 8px 12px hsl(0 0% 0% / .16));
+  color: hsl(42 54% 89%);
+  filter:
+    drop-shadow(0 5px 8px hsl(0 0% 0% / .16))
+    drop-shadow(0 0 14px hsl(39 70% 58% / .1));
+}
+.profile-nav-avatar {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: .8rem;
+  background: hsl(var(--background));
+  font-size: 1.25rem;
+}
+.profile-preview {
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
+}
+.profile-effect-moss {
+  border-color: hsl(161 42% 48% / .65);
+  box-shadow: 0 0 0 2px hsl(161 42% 48% / .14), 0 18px 44px hsl(161 42% 25% / .16);
+}
+.profile-effect-honey {
+  border-color: hsl(39 79% 67% / .8);
+  box-shadow: 0 0 0 2px hsl(39 79% 67% / .18), 0 18px 44px hsl(39 60% 35% / .17);
+}
+.profile-effect-notebook {
+  border: 1px dashed hsl(13 66% 65% / .8);
+  background-image: radial-gradient(hsl(13 66% 65% / .07) 1px, transparent 1.5px);
+  background-size: 13px 13px;
+}
+.profile-effect-honey .profile-avatar {
+  box-shadow: 0 0 22px hsl(39 79% 67% / .2);
+}
+.profile-effect-moss .profile-avatar {
+  box-shadow: 0 0 22px hsl(161 42% 48% / .2);
+}
+.profile-effect-notebook .profile-avatar {
+  border-style: dashed;
+  border-color: hsl(13 66% 65% / .6);
 }
 .focus-room {
   background:

@@ -1,1 +1,2 @@
 - [Study Hive visual/audio direction](study-hive-visual-audio.md) — Keep the warm, dark science look and quiet ambient rain consistent across the app.
+- [Study Hive call safety](study-hive-call-safety.md) — Keep live audio monitoring off until age/consent rules and a real stream are established.

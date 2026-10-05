@@ -65,6 +65,7 @@ import {
   Plus,
   RotateCcw,
   Search,
+  Settings2,
   ShieldCheck,
   Sparkles,
   Star,
@@ -81,6 +82,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import ProfilePage from "@/pages/profile";
+import SettingsPage from "@/pages/settings";
 import {
   defaultStudyHiveProfile,
   readStudyHiveProfile,
@@ -128,7 +130,7 @@ const clerkAppearance = {
   elements: {
     rootBox: "w-full flex justify-center",
     cardBox:
-      "bg-[hsl(224_21%_16%)] rounded-2xl w-[440px] max-w-full overflow-hidden",
+      "bg-[hsl(224_21%_16%)] rounded-2xl w-full max-w-[440px] overflow-hidden",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
     footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
     headerTitle: "text-[hsl(42_34%_91%)]",
@@ -609,6 +611,7 @@ const navItems = [
   { href: "/tutor", label: "Tutor preview", icon: MessageCircle },
   { href: "/classroom", label: "Classroom gateway", icon: LockKeyhole },
   { href: "/profile", label: "My profile", icon: UserRound },
+  { href: "/settings", label: "Settings", icon: Settings2 },
 ];
 
 function Shell({ children }: { children: ReactNode }) {
@@ -712,7 +715,7 @@ function Shell({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => setDebug((v) => !v)}
-              className="focus-ring ml-auto flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+              className="focus-ring ml-auto hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground sm:flex"
               data-testid="button-debug-toggle"
             >
               <Keyboard size={15} />{" "}
@@ -901,25 +904,27 @@ function Dashboard() {
             </Link>
           </div>
         </div>
-        <div className="hero-doodle mt-7 flex items-center justify-center gap-5 sm:absolute sm:bottom-8 sm:right-12 sm:mt-0" aria-hidden="true">
+        <div className="hero-doodle mt-7 flex items-center justify-center gap-5 sm:absolute sm:bottom-7 sm:right-10 sm:mt-0" aria-hidden="true">
           <svg viewBox="0 0 240 190" className="h-44 w-56 overflow-visible sm:h-52 sm:w-64" fill="none">
+            <path d="M60 157c18-35 35-69 53-92 3-4 8-4 11 0 19 25 37 58 55 93-20-2-37 1-56 2-22 0-41-5-63-3Z" fill="hsl(25 45% 37% / .72)" />
+            <path d="M76 146c18-5 30-2 42 0 14 3 27 1 42-2l10 13c-23-2-37 4-59 3-14 0-26-3-43-1Z" fill="hsl(13 48% 48% / .66)" />
             <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity=".82">
-              <path d="M18 162c23-5 41 5 64 1 27-5 44 4 69 1 22-3 40 2 60-2" />
-              <path d="M48 160c18-36 38-75 62-102 5-6 13-6 19 0 25 29 45 68 65 103" />
-              <path d="M104 60c9-7 24-8 34-1m-40 3c14 4 31 4 45-1" />
-              <path d="M72 125c11-5 21 2 30-2m-42 24c14-4 21 4 33 1m65-22c-11-4-20 2-29 5m45 12c-11-2-18 4-27 3" />
-              <path d="M116 50c-11-5-10-13-2-19 6-5 5-10 1-15m8 34c13-3 18-12 11-20m-28 13c-9-5-8-13 0-19" />
-              <path d="M26 83h24l10 9m-10-15 10 15-13-1m132 2 21-15m-9 0 9 0-2 9" />
-              <path d="M29 154l-5-11m13 12 1-14m170 11 7-12m-18 13 1-10" />
+              <path d="M18 162c23-5 41 5 64 1 27-5 44 4 69 1 22-3 40 2 60-2" stroke="hsl(39 67% 70%)" />
+              <path d="M48 160c18-36 38-75 62-102 5-6 13-6 19 0 25 29 45 68 65 103" stroke="hsl(31 58% 72%)" />
+              <path d="M104 60c9-7 24-8 34-1m-40 3c14 4 31 4 45-1" stroke="hsl(220 30% 87%)" />
+              <path d="M72 125c11-5 21 2 30-2m-42 24c14-4 21 4 33 1m65-22c-11-4-20 2-29 5m45 12c-11-2-18 4-27 3" stroke="hsl(13 55% 70%)" />
+              <path d="M116 50c-11-5-10-13-2-19 6-5 5-10 1-15m8 34c13-3 18-12 11-20m-28 13c-9-5-8-13 0-19" stroke="hsl(161 38% 72%)" />
+              <path d="M26 83h24l10 9m-10-15 10 15-13-1m132 2 21-15m-9 0 9 0-2 9" stroke="hsl(161 38% 70%)" />
+              <path d="M29 154l-5-11m13 12 1-14m170 11 7-12m-18 13 1-10" stroke="hsl(105 39% 67%)" />
               <path d="M122 62c-1 10 6 13 5 22-1 8 5 12 3 20-2 9 5 15 8 23 2 6 2 12 7 19" stroke="hsl(13 76% 70%)" strokeWidth="4" />
-              <circle cx="87" cy="52" r="2" fill="currentColor" stroke="none" />
-              <circle cx="155" cy="47" r="2.5" fill="currentColor" stroke="none" />
-              <circle cx="171" cy="62" r="1.8" fill="currentColor" stroke="none" />
+              <circle cx="87" cy="52" r="2" fill="hsl(39 83% 74%)" stroke="none" />
+              <circle cx="155" cy="47" r="2.5" fill="hsl(161 48% 70%)" stroke="none" />
+              <circle cx="171" cy="62" r="1.8" fill="hsl(13 72% 73%)" stroke="none" />
             </g>
             <path d="M119 65c3 10 0 13 6 20 5 6 0 13 4 19 3 7 8 13 9 21-5-5-11-7-15-13-5-7-3-13-6-20-3-8-8-13-5-21Z" fill="hsl(13 76% 63% / .65)" />
-            <text x="13" y="77" fill="currentColor" fontFamily="monospace" fontSize="8" opacity=".82">ASH CLOUD</text>
-            <text x="171" y="112" fill="currentColor" fontFamily="monospace" fontSize="8" opacity=".82">LAVA</text>
-            <path d="M167 116l-17 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity=".7" />
+            <text x="13" y="77" fill="hsl(220 30% 87%)" fontFamily="monospace" fontSize="8" opacity=".9">ASH CLOUD</text>
+            <text x="171" y="112" fill="hsl(39 83% 74%)" fontFamily="monospace" fontSize="8" opacity=".95">LAVA</text>
+            <path d="M167 116l-17 8" stroke="hsl(39 83% 74%)" strokeWidth="1.2" strokeLinecap="round" opacity=".9" />
           </svg>
         </div>
       </div>
@@ -948,7 +953,7 @@ function Dashboard() {
           {
             label: "Sessions logged",
             value: String(sessions.length),
-            sub: "Saved in this browser",
+            sub: "Saved on this device",
             icon: Clock3,
           },
         ].map(({ label, value, sub, icon: Icon }, i) => (
@@ -1319,8 +1324,8 @@ function BookCard({
             </div>
             <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
               <p className="max-w-sm text-xs leading-5 text-muted-foreground">
-                This is a Study Hive learning aid, not an NCDC-approved
-                procedure. Follow your teacher’s method and safety instructions.
+                Follow your teacher’s method and safety instructions for any
+                practical work.
               </p>
             </div>
           </section>
@@ -1367,14 +1372,6 @@ function Library() {
           </SoftBadge>
         }
       />
-      <div className="hive-card mb-6 flex gap-3 p-4 text-sm sm:p-5">
-        <Info className="mt-0.5 shrink-0 text-primary" size={18} />
-        <p className="leading-6 text-muted-foreground">
-          NCDC links go to official syllabi. Activity steps are Study Hive
-          learning aids, not NCDC-approved practical procedures; check them
-          with your teacher before trying anything.
-        </p>
-      </div>
       <section
         className="hive-card mb-6 p-5"
         aria-label="Progressive study access"
@@ -1469,23 +1466,6 @@ function Library() {
           ))}
         </div>
       )}
-      <div className="mt-8 flex gap-3 rounded-2xl border border-secondary/50 bg-secondary/20 p-5 text-sm">
-        <Info className="mt-0.5 shrink-0 text-primary" size={18} />
-        <p className="leading-6">
-          These guides are study aids, not official publications or a substitute
-          for teacher instruction.{" "}
-          <a
-            href="https://ncdc.go.ug/books"
-            target="_blank"
-            rel="noreferrer"
-            className="font-bold text-primary underline"
-            data-testid="link-ncdc-books"
-          >
-            Browse NCDC books
-          </a>{" "}
-          to find current curriculum materials.
-        </p>
-      </div>
     </div>
   );
 }
@@ -3285,9 +3265,9 @@ function Classroom() {
           </div>
           <h2 className="mt-6 text-2xl font-bold">Live room locked for now</h2>
           <p className="mt-3 max-w-xl leading-7 text-muted-foreground">
-            Authentication, participant isolation, and server-side enforcement
-            of a maximum of three people must exist before any live call can be
-            offered. This demo has none of those protections connected.
+            Sign-in is available, but private room membership, participant
+            controls, and live-call safety checks are not connected. Calls stay
+            off until those protections are in place.
           </p>
           <button
             disabled
@@ -3300,11 +3280,17 @@ function Classroom() {
         </div>
         <div className="space-y-3">
           {[
-            ["Authentication", "No account or identity is connected."],
-            ["Private rooms", "No student-to-student DMs or open room links."],
             [
-              "Three-person limit",
-              "Would need server-side enforcement before launch.",
+              "Account sign-in",
+              "Study Hive accounts are available; classroom-only permissions are not wired.",
+            ],
+            [
+              "Private rooms",
+              "Room membership checks and protected invite links are not connected.",
+            ],
+            [
+              "Call safety",
+              "No Zoom room or real-time moderation system is connected.",
             ],
           ].map(([title, body], i) => (
             <div key={title} className="hive-card flex gap-4 p-5">
@@ -3325,9 +3311,10 @@ function Classroom() {
         <div className="flex gap-3">
           <Info className="mt-0.5 shrink-0 text-primary" size={18} />
           <p>
-            <strong>Safe by being clear:</strong> there is no live feed, no call
-            simulation, and no classmates connected. Use the local Peer learning
-            prototype for offline question drafting instead.
+            <strong>Safe by being clear:</strong> there is no live feed, call
+            simulation, or participant monitoring. Calls remain unavailable
+            until joining rules, notice, consent, and moderation safeguards are
+            defined.
           </p>
         </div>
       </div>
@@ -3506,6 +3493,7 @@ function AppContent({ userId }: { userId: string }) {
           <Route path="/tutor" component={Tutor} />
           <Route path="/classroom" component={Classroom} />
           <Route path="/profile" component={ProfilePage} />
+          <Route path="/settings" component={SettingsPage} />
           <Route component={NotFound} />
         </Switch>
       </Shell>
@@ -3545,7 +3533,7 @@ function PublicHome() {
             <small className="eyebrow">learn together</small>
           </span>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-2 sm:flex">
           <Link
             href="/sign-in"
             className="focus-ring rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-card"
